@@ -12,6 +12,31 @@ export const useAPIData = (endpoint, token) => {
         });
     };
 
+    const getTask = async (params) => {
+        const url = `${endpoint}/custom/vold/api.php/?action=get_task&${new URLSearchParams(params).toString()}`;
+
+        return apiFetch(url, {
+            method: 'GET',
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+    };
+
+    const updateTaskTime = async (ref, data) => {
+        const url = `${endpoint}/custom/vold/api.php/?action=update_task_time&ref=` + ref;
+
+        return apiFetch(url, {
+            method: 'PUT',
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+    };
+
 
     const apiFetch = async (url, options = {}) => {
         try {
@@ -34,5 +59,5 @@ export const useAPIData = (endpoint, token) => {
         return await response.json();
     };
 
-    return { searchTasks };
+    return { searchTasks, getTask, updateTaskTime };
 };

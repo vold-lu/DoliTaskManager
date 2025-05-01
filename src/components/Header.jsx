@@ -3,24 +3,50 @@ import SettingSvg from "../svg/SettingSvg.jsx";
 import ArrowLeft from "../svg/ArrowLeft.jsx";
 
 const Header = ({view, setView}) => {
+
+    function getBackView() {
+        if (view === 'settings' || view === 'task') {
+            return 'home';
+        }
+
+        return null;
+    }
+
+    function Title() {
+        if (view === 'settings') {
+            return 'Settings';
+        }
+
+        if (view === 'home') {
+            return 'DoliTaskManager';
+        }
+
+        if (view === 'task') {
+            return 'Task';
+        }
+    }
+
     return (
         <div className={'flex flex-row justify-between bg-blue-700 p-2 items-center text-white'}>
-            {
-                view === 'settings' ?
-                    <>
-                        <p className={'text-lg font-bold'}>Settings</p>
-                        <div onClick={() => setView('home')}>
-                            <ArrowLeft/>
-                        </div>
-                    </>
+            <div className={'flex flex-row gap-2 items-center'}>
+                {getBackView() ?
+                    <div onClick={() => setView(getBackView())} className={'cursor-pointer'}>
+                        <ArrowLeft />
+                    </div>
                     :
-                    <>
-                        <p className={'text-lg font-bold'}>user todo</p>
-                        <div onClick={() => setView('settings')}>
-                            <SettingSvg/>
-                        </div>
-                    </>
+                    null
+                }
+                <p className={'text-lg font-bold'}><Title/></p>
+            </div>
+            {
+                view !== 'settings' ?
+                    <div onClick={() => setView('settings')} className={'cursor-pointer'}>
+                        <SettingSvg/>
+                    </div>
+                    :
+                    <div></div>
             }
+
         </div>
     );
 };

@@ -5,6 +5,7 @@ import Home from "./Home.jsx";
 import './index.css';
 import Header from "./components/Header.jsx";
 import Settings from "./Settings.jsx";
+import Task from "./Task.jsx";
 
 const App = () => {
 
@@ -12,6 +13,8 @@ const App = () => {
 
     const [apiKey, setApiKey] = useState('')
     const [apiUrl, setApiUrl] = useState('')
+
+    const [selectedTask, setSelectedTask] = useState(null);
 
     useEffect(() => {
         chrome.storage.sync.get(['apiKey'], (result) => {
@@ -41,17 +44,25 @@ const App = () => {
 
     return (
         <>
-            <Header view={view} setView={setView}/>
+            <Header view={view} setView={setView} setSelectedTask={setSelectedTask}/>
             <div className={'w-full h-full p-2 bg-blue-100'}>
 
                 {view === 'home' ?
-                    <Home apiKey={apiKey} apiUrl={apiUrl}/>
+                    <Home apiKey={apiKey} apiUrl={apiUrl} setView={setView} selectedTask={selectedTask}
+                          setSelectedTask={setSelectedTask}/>
                     :
                     null
                 }
 
                 {view === 'settings' ?
                     <Settings setApiKey={saveApiKey} apiKey={apiKey} setApiUrl={saveApiUrl} apiUrl={apiUrl}/>
+                    :
+                    null
+                }
+
+                {view === 'task' ?
+                    <Task apiKey={apiKey} apiUrl={apiUrl} setView={setView} selectedTask={selectedTask}
+                          setSelectedTask={setSelectedTask}/>
                     :
                     null
                 }

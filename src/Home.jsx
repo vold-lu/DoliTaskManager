@@ -2,14 +2,13 @@ import React, {useEffect, useState} from 'react';
 import {useAPIData} from "./hooks/api.js";
 import Loader from "./components/Loader.jsx";
 
-const Home = ({apiUrl, apiKey}) => {
+const Home = ({apiUrl, apiKey, setView, setSelectedTask}) => {
 
     const {searchTasks} = useAPIData(apiUrl, apiKey);
 
     const [searchTerm, setSearchTerm] = useState('');
     const [tasks, setTasks] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
-
 
     useEffect(() => {
         setIsLoading(true)
@@ -27,6 +26,11 @@ const Home = ({apiUrl, apiKey}) => {
 
     }, [searchTerm])
 
+    function selectTask(currentTask) {
+        setSelectedTask(currentTask);
+        setView('task');
+    }
+
 
     return (
         <div className="flex flex-col gap-4 items-center justify-center">
@@ -39,7 +43,7 @@ const Home = ({apiUrl, apiKey}) => {
             />
             <div className={'flex flex-col gap-1 w-full'}>
                 {isLoading ?
-                    <Loader />
+                    <Loader className={'mx-auto text-center'} />
                     :
                     null
                 }
@@ -53,7 +57,7 @@ const Home = ({apiUrl, apiKey}) => {
                 {
                     tasks.map((task) => {
                         return (
-                            <div className={'bg-white rounded p-2 w-full'}>
+                            <div className={'bg-white rounded p-2 w-full cursor-pointer hover:shadow-lg'} onClick={() => selectTask(task)}>
                                 <p>{task.ref}</p>
                             </div>
                         )
