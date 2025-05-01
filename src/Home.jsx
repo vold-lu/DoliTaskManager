@@ -1,24 +1,32 @@
 import React, {useEffect, useState} from 'react';
+import {useAPIData} from "./hooks/api.js";
+import Loader from "./components/Loader.jsx";
 
-const Home = () => {
+const Home = ({apiUrl, apiKey}) => {
+
+    const {searchTasks} = useAPIData(apiUrl, apiKey);
 
     const [searchTerm, setSearchTerm] = useState('');
-
     const [tasks, setTasks] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
+
 
     useEffect(() => {
-        setTasks([
-            {
-                'id': 1,
-                'ref': 'HCE-123',
-            },
-            {
-                'id': 2,
-                'ref': 'HCE-456',
-            }
+        setIsLoading(true)
+        setTasks([]);
 
-        ])
-    }, [tasks]);
+        let params = {
+            search_term: searchTerm,
+        }
+
+        searchTasks(params).then((items) => {
+            setTasks(items)
+        }).finally(() => {
+            setIsLoading(false)
+        })
+
+    }, [searchTerm])
+
 
     return (
         <div className="flex flex-col gap-4 items-center justify-center">
@@ -30,6 +38,18 @@ const Home = () => {
                 onChange={(e) => setSearchTerm(e.target.value)}
             />
             <div className={'flex flex-col gap-1 w-full'}>
+                {isLoading ?
+                    <Loader />
+                    :
+                    null
+                }
+                {!isLoading && tasks?.length === 0 ?
+                    <div className={'bg-white rounded p-2 w-full'}>
+                        <p>Aucun résultat :(</p>
+                    </div>
+                    :
+                    null
+                }
                 {
                     tasks.map((task) => {
                         return (

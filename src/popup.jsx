@@ -45,7 +45,7 @@ const App = () => {
             <div className={'w-full h-full p-2 bg-blue-100'}>
 
                 {view === 'home' ?
-                    <Home/>
+                    <Home apiKey={apiKey} apiUrl={apiUrl}/>
                     :
                     null
                 }
