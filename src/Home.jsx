@@ -11,6 +11,8 @@ const Home = ({apiUrl, apiKey, setView, setSelectedTask}) => {
     const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
+        if (!apiKey || !apiUrl) return;
+
         setIsLoading(true)
         setTasks([]);
 
@@ -24,13 +26,12 @@ const Home = ({apiUrl, apiKey, setView, setSelectedTask}) => {
             setIsLoading(false)
         })
 
-    }, [searchTerm])
+    }, [searchTerm, apiUrl, apiKey])
 
     function selectTask(currentTask) {
         setSelectedTask(currentTask);
         setView('task');
     }
-
 
     return (
         <div className="flex flex-col gap-4 items-center justify-center">
