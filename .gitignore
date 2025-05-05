@@ -23,5 +23,5 @@ dist-ssr
 *.sln
 *.sw?
 
-# Custom
-config.js
+# Custom config
+/src/config.js

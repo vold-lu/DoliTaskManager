@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {useAPIData} from "./hooks/api.js";
 import Loader from "./components/Loader.jsx";
-import config from '../config.js';
+import config from './config.js';
 
 const Home = ({apiUrl, apiKey, setView, setSelectedTask}) => {
 
