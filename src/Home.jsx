@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {useAPIData} from "./hooks/api.js";
 import Loader from "./components/Loader.jsx";
+import config from '../config.js';
 
 const Home = ({apiUrl, apiKey, setView, setSelectedTask}) => {
 
@@ -9,6 +10,10 @@ const Home = ({apiUrl, apiKey, setView, setSelectedTask}) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [tasks, setTasks] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
+
+    useEffect(() => {
+        findTaskRef();
+    }, [])
 
     useEffect(() => {
         if (!apiKey || !apiUrl) return;
@@ -27,6 +32,29 @@ const Home = ({apiUrl, apiKey, setView, setSelectedTask}) => {
         })
 
     }, [searchTerm, apiUrl, apiKey])
+
+    function findTaskRef() {
+        chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+            console.log(tabs)
+            const tab = tabs[0];
+            if (!tab || !tab.url) {
+                return;
+            }
+
+            const url = new URL(tab.url);
+            const hostname = url.hostname;
+            const pathname = url.pathname;
+
+            if (hostname === config.ATLASSIAN_HOSTNAME) {
+                const matches = pathname.match(/([A-Z]+-\d+)/g);
+                if (matches && matches.length) {
+                    const ticketRef = matches[matches.length - 1];
+                    setSearchTerm(ticketRef);
+                }
+            }
+        });
+    }
+
 
     function selectTask(currentTask) {
         setSelectedTask(currentTask);
@@ -58,7 +86,7 @@ const Home = ({apiUrl, apiKey, setView, setSelectedTask}) => {
                 {
                     tasks.map((task) => {
                         return (
-                            <div className={'bg-white rounded p-2 w-full cursor-pointer hover:shadow-lg'} onClick={() => selectTask(task)}>
+                            <div key={task.ref} className={'bg-white rounded p-2 w-full cursor-pointer hover:shadow-lg'} onClick={() => selectTask(task)}>
                                 <p>{task.ref}</p>
                             </div>
                         )
