@@ -2,6 +2,7 @@ import React, {useEffect, useState} from 'react';
 import {useAPIData} from "./hooks/api.js";
 import Loader from "./components/Loader.jsx";
 import config from './config.js';
+import TaskIcon from "./components/TaskIcon.jsx";
 
 const Home = ({apiUrl, apiKey, showOnlyMyTasks, setView, setSelectedTask}) => {
 
@@ -74,7 +75,7 @@ const Home = ({apiUrl, apiKey, showOnlyMyTasks, setView, setSelectedTask}) => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <div className={'flex flex-col gap-1 w-full'}>
+            <div className={'flex flex-col gap-1 w-full overflow-y-auto max-h-[475px]'}>
                 {isLoading ?
                     <Loader className={'mx-auto text-center'}/>
                     :
@@ -90,11 +91,20 @@ const Home = ({apiUrl, apiKey, showOnlyMyTasks, setView, setSelectedTask}) => {
                 {
                     tasks.map((task) => {
                         return (
-                            <div key={task.ref} className={'bg-white rounded p-2 w-full cursor-pointer hover:shadow-lg'}
+                            <div key={task.ref}
+                                 className={'bg-white rounded py-2 pr-2 w-full cursor-pointer hover:shadow-lg grid grid-cols-8'}
                                  onClick={() => selectTask(task)}>
-                                <p>
-                                    <span className={'font-bold'}>{task.ref} {!showOnlyMyTasks ? '(' + task.user + ')' : ''}</span> - <span className={'text-gray-600'}>{task.subject}</span>
-                                </p>
+                                <div className={'col-span-1 flex items-center'}>
+                                    <TaskIcon type={task.type_code} className={'mx-auto'}/>
+                                </div>
+                                <div className={'col-span-7'}>
+                                    <p className={'font-bold'}>
+                                        {task.ref} {!showOnlyMyTasks ? '(' + task.user + ')' : ''}
+                                    </p>
+                                    <p className={'text-gray-600'}>
+                                        {task.subject}
+                                    </p>
+                                </div>
                             </div>
                         )
                     })

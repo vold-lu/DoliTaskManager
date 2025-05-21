@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {useAPIData} from "./hooks/api.js";
 import Loader from "./components/Loader.jsx";
+import TaskIcon from "./components/TaskIcon.jsx";
 
 const Task = ({apiUrl, apiKey, selectedTask}) => {
 
@@ -99,7 +100,10 @@ const Task = ({apiUrl, apiKey, selectedTask}) => {
 
     return (
         <div>
-            <h1 className={'text-2xl text-center font-bold mb-2'}>{task?.ref}</h1>
+            <h1 className={'text-2xl font-bold mb-2 flex flex-row gap-2 text-center items-center w-full justify-center'}>
+                <TaskIcon type={task.type_code}/>
+                <span>{task?.ref}</span>
+            </h1>
             <div className={'text-center mb-4 px-4'}>
                 {task?.subject}
             </div>
@@ -137,7 +141,7 @@ const Task = ({apiUrl, apiKey, selectedTask}) => {
                 </div>
                 <div className={'mx-auto text-center'}>
                     <a target={'_blank'} className={'text-center text-red-500 hover:underline font-bold'}
-                       href={task?.link}>View online</a>
+                       href={task?.link}>Voir sur Dolibarr</a>
                 </div>
             </div>
 
