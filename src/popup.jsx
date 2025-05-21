@@ -13,6 +13,7 @@ const App = () => {
 
     const [apiKey, setApiKey] = useState('')
     const [apiUrl, setApiUrl] = useState('')
+    const [showOnlyMyTasks, setShowOnlyMyTasks] = useState(true);
 
     const [selectedTask, setSelectedTask] = useState(null);
 
@@ -26,6 +27,12 @@ const App = () => {
         chrome.storage.sync.get(['apiUrl'], (result) => {
             if (result.apiUrl) {
                 setApiUrl(result.apiUrl)
+            }
+        })
+
+        chrome.storage.sync.get(['showOnlyMyTasks'], (result) => {
+            if (result.showOnlyMyTasks !== undefined) {
+                setShowOnlyMyTasks(result.showOnlyMyTasks)
             }
         })
     }, [])
@@ -42,20 +49,29 @@ const App = () => {
         })
     }
 
+    const saveShowOnlyMyTasks = (showOnlyMyTasks) => {
+        chrome.storage.sync.set({showOnlyMyTasks: showOnlyMyTasks}, () => {
+            setShowOnlyMyTasks(showOnlyMyTasks)
+        })
+    }
+
     return (
         <>
             <Header view={view} setView={setView} setSelectedTask={setSelectedTask}/>
             <div className={'w-full h-full p-2 bg-blue-100'}>
 
                 {view === 'home' ?
-                    <Home apiKey={apiKey} apiUrl={apiUrl} setView={setView} selectedTask={selectedTask}
+                    <Home apiKey={apiKey} apiUrl={apiUrl} showOnlyMyTasks={showOnlyMyTasks}
+                          setView={setView} selectedTask={selectedTask}
                           setSelectedTask={setSelectedTask}/>
                     :
                     null
                 }
 
                 {view === 'settings' ?
-                    <Settings setApiKey={saveApiKey} apiKey={apiKey} setApiUrl={saveApiUrl} apiUrl={apiUrl}/>
+                    <Settings setApiKey={saveApiKey} apiKey={apiKey}
+                              setApiUrl={saveApiUrl} apiUrl={apiUrl}
+                              setShowOnlyMyTasks={saveShowOnlyMyTasks} showOnlyMyTasks={showOnlyMyTasks}/>
                     :
                     null
                 }

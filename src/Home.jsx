@@ -3,7 +3,7 @@ import {useAPIData} from "./hooks/api.js";
 import Loader from "./components/Loader.jsx";
 import config from './config.js';
 
-const Home = ({apiUrl, apiKey, setView, setSelectedTask}) => {
+const Home = ({apiUrl, apiKey, showOnlyMyTasks, setView, setSelectedTask}) => {
 
     const {searchTasks} = useAPIData(apiUrl, apiKey);
 
@@ -25,16 +25,20 @@ const Home = ({apiUrl, apiKey, setView, setSelectedTask}) => {
             search_term: searchTerm,
         }
 
+        if (showOnlyMyTasks === false) {
+            params.view_all_tasks = true;
+        }
+
         searchTasks(params).then((items) => {
             setTasks(items)
         }).finally(() => {
             setIsLoading(false)
         })
 
-    }, [searchTerm, apiUrl, apiKey])
+    }, [searchTerm, apiUrl, apiKey, showOnlyMyTasks])
 
     function findTaskRef() {
-        chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+        chrome.tabs.query({active: true, currentWindow: true}, function (tabs) {
             console.log(tabs)
             const tab = tabs[0];
             if (!tab || !tab.url) {
@@ -72,7 +76,7 @@ const Home = ({apiUrl, apiKey, setView, setSelectedTask}) => {
             />
             <div className={'flex flex-col gap-1 w-full'}>
                 {isLoading ?
-                    <Loader className={'mx-auto text-center'} />
+                    <Loader className={'mx-auto text-center'}/>
                     :
                     null
                 }
@@ -86,8 +90,11 @@ const Home = ({apiUrl, apiKey, setView, setSelectedTask}) => {
                 {
                     tasks.map((task) => {
                         return (
-                            <div key={task.ref} className={'bg-white rounded p-2 w-full cursor-pointer hover:shadow-lg'} onClick={() => selectTask(task)}>
-                                <p>{task.ref}</p>
+                            <div key={task.ref} className={'bg-white rounded p-2 w-full cursor-pointer hover:shadow-lg'}
+                                 onClick={() => selectTask(task)}>
+                                <p>
+                                    <span className={'font-bold'}>{task.ref} {!showOnlyMyTasks ? '(' + task.user + ')' : ''}</span> - <span className={'text-gray-600'}>{task.subject}</span>
+                                </p>
                             </div>
                         )
                     })

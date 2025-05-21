@@ -10,6 +10,7 @@ const Task = ({apiUrl, apiKey, selectedTask}) => {
     const [isLoading, setIsLoading] = useState(true);
     const [isUpdateTaskTimeLoading, setIsUpdateTaskTimeLoading] = useState(false);
     const [selectedDuration, setSelectedDuration] = useState(30);
+    const [note, setNote] = useState('');
 
 
     useEffect(() => {
@@ -24,6 +25,7 @@ const Task = ({apiUrl, apiKey, selectedTask}) => {
             setTask(item)
         }).finally(() => {
             setIsLoading(false)
+            setNote('')
         })
 
     }, [selectedTask])
@@ -77,10 +79,11 @@ const Task = ({apiUrl, apiKey, selectedTask}) => {
             duration = -duration;
         }
 
-        updateTaskTime(task.ref, {duration: duration}).then(task => {
+        updateTaskTime(task.ref, {duration: duration, note: note}).then(task => {
             setTask(task)
         }).finally(() => {
             setIsUpdateTaskTimeLoading(false)
+            setNote('')
         })
 
     }
@@ -96,16 +99,20 @@ const Task = ({apiUrl, apiKey, selectedTask}) => {
 
     return (
         <div>
-            <h1 className={'text-2xl text-center font-bold mb-4'}>{task?.ref}</h1>
+            <h1 className={'text-2xl text-center font-bold mb-2'}>{task?.ref}</h1>
+            <div className={'text-center mb-4 px-4'}>
+                {task?.subject}
+            </div>
             <div className={'mx-auto w-80'}>
                 <div className={'grid grid-cols-4 gap-1 items-center mb-2'}>
                     <DurationButton duration={10}/>
                     <DurationButton duration={30}/>
                     <DurationButton duration={60}/>
-                    <input type={'number'} value={selectedDuration} className={'p-2 rounded text-md text-center bg-white'}
+                    <input type={'number'} value={selectedDuration}
+                           className={'p-2 rounded text-md text-center bg-white'}
                            onChange={(e) => setCustomerDuration(e.target.value)}/>
                 </div>
-                <div className={'grid grid-cols-6 gap-2 items-center h-12 mb-8'}>
+                <div className={'grid grid-cols-6 gap-2 items-center h-12 mb-6'}>
                     <div
                         className={'col-span-1 h-full content-center p-2 bg-white text-center hover:bg-blue-700 cursor-pointer rounded hover:text-white'}
                         onClick={() => updateTime('minus')}>
@@ -124,8 +131,13 @@ const Task = ({apiUrl, apiKey, selectedTask}) => {
                         +
                     </div>
                 </div>
+                <div className={'grid gap-1 items-center mb-8'}>
+                    <input type={'text'} className={'p-2 rounded bg-white'} placeholder={'Note'} value={note}
+                           onChange={(e) => setNote(e.target.value)}/>
+                </div>
                 <div className={'mx-auto text-center'}>
-                    <a target={'_blank'} className={'text-center text-red-500 hover:underline font-bold'} href={task?.link}>View online</a>
+                    <a target={'_blank'} className={'text-center text-red-500 hover:underline font-bold'}
+                       href={task?.link}>View online</a>
                 </div>
             </div>
 

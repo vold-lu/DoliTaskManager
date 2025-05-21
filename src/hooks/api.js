@@ -1,7 +1,7 @@
 export const useAPIData = (endpoint, token) => {
 
     const searchTasks = async (params) => {
-        const url = `${endpoint}/custom/vold/api.php/?action=search_tasks&${new URLSearchParams(params).toString()}`;
+        const url = `${endpoint}/custom/vold/ticket_api.php?action=search_tasks&${new URLSearchParams(params).toString()}`;
 
         return apiFetch(url, {
             method: 'GET',
@@ -13,7 +13,7 @@ export const useAPIData = (endpoint, token) => {
     };
 
     const getTask = async (params) => {
-        const url = `${endpoint}/custom/vold/api.php/?action=get_task&${new URLSearchParams(params).toString()}`;
+        const url = `${endpoint}/custom/vold/ticket_api.php?action=get_task&${new URLSearchParams(params).toString()}`;
 
         return apiFetch(url, {
             method: 'GET',
@@ -25,7 +25,7 @@ export const useAPIData = (endpoint, token) => {
     };
 
     const updateTaskTime = async (ref, data) => {
-        const url = `${endpoint}/custom/vold/api.php/?action=update_task_time&ref=` + ref;
+        const url = `${endpoint}/custom/vold/ticket_api.php?action=update_task_time&ref=` + ref;
 
         return apiFetch(url, {
             method: 'PUT',
@@ -59,5 +59,5 @@ export const useAPIData = (endpoint, token) => {
         return await response.json();
     };
 
-    return { searchTasks, getTask, updateTaskTime };
+    return {searchTasks, getTask, updateTaskTime};
 };
