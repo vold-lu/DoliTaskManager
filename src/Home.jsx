@@ -13,52 +13,65 @@ const Home = ({apiUrl, apiKey, showOnlyMyTasks, setView, setSelectedTask}) => {
     const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
-        findTaskRef();
-    }, [])
+        if (!apiKey || !apiUrl || isLoading) return;
 
-    useEffect(() => {
-        if (!apiKey || !apiUrl) return;
+        const fetchTasks = async () => {
+            setIsLoading(true);
+            setTasks([]);
 
-        setIsLoading(true)
-        setTasks([]);
+            let currentSearchTerm = searchTerm;
 
-        let params = {
-            search_term: searchTerm,
-        }
-
-        if (showOnlyMyTasks === false) {
-            params.view_all_tasks = true;
-        }
-
-        searchTasks(params).then((items) => {
-            setTasks(items)
-        }).finally(() => {
-            setIsLoading(false)
-        })
-
-    }, [searchTerm, apiUrl, apiKey, showOnlyMyTasks])
-
-    function findTaskRef() {
-        chrome.tabs.query({active: true, currentWindow: true}, function (tabs) {
-            console.log(tabs)
-            const tab = tabs[0];
-            if (!tab || !tab.url) {
-                return;
-            }
-
-            const url = new URL(tab.url);
-            const hostname = url.hostname;
-            const pathname = url.pathname;
-
-            if (hostname === config.ATLASSIAN_HOSTNAME) {
-                const matches = pathname.match(/([A-Z]+-\d+)/g);
-                if (matches && matches.length) {
-                    const ticketRef = matches[matches.length - 1];
-                    setSearchTerm(ticketRef);
+            if (!searchTerm) {
+                currentSearchTerm = await findTaskRef();
+                if (currentSearchTerm) {
+                    setSearchTerm(currentSearchTerm);
                 }
             }
+
+            const params = {
+                search_term: currentSearchTerm,
+            };
+
+            if (showOnlyMyTasks === false) {
+                params.view_all_tasks = true;
+            }
+
+            searchTasks(params)
+                .then((items) => {
+                    setTasks(items);
+                })
+                .finally(() => {
+                    setIsLoading(false);
+                });
+        };
+
+        fetchTasks();
+
+    }, [searchTerm, apiUrl, apiKey, showOnlyMyTasks]);
+
+    const findTaskRef = async () => {
+        return new Promise((resolve) => {
+            chrome.tabs.query({active: true, currentWindow: true}, function (tabs) {
+                const tab = tabs[0];
+                if (!tab || !tab.url) {
+                    return resolve('');
+                }
+
+                const url = new URL(tab.url);
+                const hostname = url.hostname;
+                const pathname = url.pathname;
+
+                if (hostname === config.ATLASSIAN_HOSTNAME) {
+                    const matches = pathname.match(/([A-Z]+-\d+)/g);
+                    if (matches && matches.length) {
+                        return resolve(matches[0]);
+                    }
+                }
+
+                return resolve('');
+            });
         });
-    }
+    };
 
 
     function selectTask(currentTask) {
