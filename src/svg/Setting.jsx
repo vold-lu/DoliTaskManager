@@ -1,6 +1,6 @@
 import React from 'react';
 
-const SettingSvg = ({className}) => {
+const Setting = ({className}) => {
     return (
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={"size-6 " + className}>
             <path fillRule="evenodd"
@@ -10,4 +10,4 @@ const SettingSvg = ({className}) => {
     );
 };
 
-export default SettingSvg;
+export default Setting;

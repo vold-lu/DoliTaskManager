@@ -108,14 +108,14 @@ const Home = ({apiUrl, apiKey, showOnlyMyTasks, setView, setSelectedTask}) => {
                                  className={'bg-white rounded py-2 pr-2 w-full cursor-pointer hover:shadow-lg grid grid-cols-8'}
                                  onClick={() => selectTask(task)}>
                                 <div className={'col-span-1 flex items-center'}>
-                                    <TaskIcon type={task.type_code} className={'mx-auto'}/>
+                                    <TaskIcon type={task?.type_code} className={'mx-auto'}/>
                                 </div>
                                 <div className={'col-span-7'}>
                                     <p className={'font-bold'}>
-                                        {task.ref} {!showOnlyMyTasks ? '(' + task.user + ')' : ''}
+                                        {task.ref} {!showOnlyMyTasks && task?.user ? '(' + task?.user + ')' : ''}
                                     </p>
                                     <p className={'text-gray-600'}>
-                                        {task.subject}
+                                        {task?.subject}
                                     </p>
                                 </div>
                             </div>

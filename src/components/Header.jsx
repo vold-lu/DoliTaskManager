@@ -1,5 +1,5 @@
 import React from 'react';
-import SettingSvg from "../svg/SettingSvg.jsx";
+import Setting from "../svg/Setting.jsx";
 import ArrowLeft from "../svg/ArrowLeft.jsx";
 
 const Header = ({view, setView}) => {
@@ -41,7 +41,7 @@ const Header = ({view, setView}) => {
             {
                 view !== 'settings' ?
                     <div onClick={() => setView('settings')} className={'cursor-pointer'}>
-                        <SettingSvg/>
+                        <Setting/>
                     </div>
                     :
                     <div></div>
