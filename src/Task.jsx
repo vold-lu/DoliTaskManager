@@ -3,14 +3,14 @@ import {useAPIData} from "./hooks/api.js";
 import Loader from "./components/Loader.jsx";
 import TaskIcon from "./components/TaskIcon.jsx";
 
-const Task = ({apiUrl, apiKey, selectedTask}) => {
+const Task = ({apiUrl, apiKey, selectedTask, defaultDuration}) => {
 
     const {getTask, updateTaskTime} = useAPIData(apiUrl, apiKey);
 
     const [task, setTask] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isUpdateTaskTimeLoading, setIsUpdateTaskTimeLoading] = useState(false);
-    const [selectedDuration, setSelectedDuration] = useState(30);
+    const [selectedDuration, setSelectedDuration] = useState(defaultDuration);
     const [note, setNote] = useState('');
 
 
@@ -34,7 +34,7 @@ const Task = ({apiUrl, apiKey, selectedTask}) => {
     function DurationButton({duration}) {
         return (
             <div
-                className={'p-2 rounded text-md text-center cursor-pointer ' + (selectedDuration === duration ? 'bg-blue-700 text-white' : 'bg-white')}
+                className={'p-2 rounded text-md text-center cursor-pointer ' + (selectedDuration == duration ? 'bg-blue-700 text-white' : 'bg-white')}
                 onClick={() => setSelectedDuration(duration)}>
                 {duration} min
             </div>
@@ -109,11 +109,15 @@ const Task = ({apiUrl, apiKey, selectedTask}) => {
             </div>
             <div className={'mx-auto w-80'}>
                 <div className={'grid grid-cols-4 gap-1 items-center mb-2'}>
+                    <DurationButton duration={5}/>
                     <DurationButton duration={10}/>
+                    <DurationButton duration={15}/>
+                    <DurationButton duration={20}/>
                     <DurationButton duration={30}/>
                     <DurationButton duration={60}/>
+                    <DurationButton duration={120}/>
                     <input type={'number'} value={selectedDuration}
-                           className={'p-2 rounded text-md text-center bg-white'}
+                           className={'p-2 rounded text-md text-center bg-white border-2 border-blue-700'}
                            onChange={(e) => setCustomerDuration(e.target.value)}/>
                 </div>
                 <div className={'grid grid-cols-6 gap-2 items-center h-12 mb-6'}>

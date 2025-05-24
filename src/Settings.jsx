@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Settings = ({apiKey, setApiKey, apiUrl, setApiUrl, showOnlyMyTasks, setShowOnlyMyTasks}) => {
+const Settings = ({apiKey, setApiKey, apiUrl, setApiUrl, showOnlyMyTasks, setShowOnlyMyTasks, defaultDuration, setDefaultDuration}) => {
     return (
         <div className="flex flex-col gap-2 items-center justify-center">
             <label className={'w-full'}>
@@ -23,6 +23,17 @@ const Settings = ({apiKey, setApiKey, apiUrl, setApiUrl, showOnlyMyTasks, setSho
                     placeholder="1337"
                     value={apiKey}
                     onChange={(e) => setApiKey(e.target.value)}
+                />
+            </label>
+
+            <label className={'w-full'}>
+                Durée par défaut
+                <input
+                    type="number"
+                    className="border p-2 w-full rounded"
+                    placeholder="30"
+                    value={defaultDuration}
+                    onChange={(e) => setDefaultDuration(e.target.value)}
                 />
             </label>
 

@@ -13,6 +13,7 @@ const App = () => {
 
     const [apiKey, setApiKey] = useState('')
     const [apiUrl, setApiUrl] = useState('')
+    const [defaultDuration, setDefaultDuration] = useState(30)
     const [showOnlyMyTasks, setShowOnlyMyTasks] = useState(true);
 
     const [selectedTask, setSelectedTask] = useState(null);
@@ -35,6 +36,12 @@ const App = () => {
                 setShowOnlyMyTasks(result.showOnlyMyTasks)
             }
         })
+
+        chrome.storage.sync.get(['defaultDuration'], (result) => {
+            if (result.defaultDuration !== undefined) {
+                setDefaultDuration(result.defaultDuration)
+            }
+        })
     }, [])
 
     const saveApiKey = (currentApiKey) => {
@@ -55,6 +62,12 @@ const App = () => {
         })
     }
 
+    const saveDefaultDuration = (currentDefaultDuration) => {
+        chrome.storage.sync.set({defaultDuration: currentDefaultDuration}, () => {
+            setDefaultDuration(currentDefaultDuration)
+        })
+    }
+
     return (
         <>
             <Header view={view} setView={setView} setSelectedTask={setSelectedTask}/>
@@ -71,14 +84,16 @@ const App = () => {
                 {view === 'settings' ?
                     <Settings setApiKey={saveApiKey} apiKey={apiKey}
                               setApiUrl={saveApiUrl} apiUrl={apiUrl}
-                              setShowOnlyMyTasks={saveShowOnlyMyTasks} showOnlyMyTasks={showOnlyMyTasks}/>
+                              setShowOnlyMyTasks={saveShowOnlyMyTasks} showOnlyMyTasks={showOnlyMyTasks}
+                              setDefaultDuration={saveDefaultDuration} defaultDuration={defaultDuration}
+                    />
                     :
                     null
                 }
 
                 {view === 'task' ?
                     <Task apiKey={apiKey} apiUrl={apiUrl} setView={setView} selectedTask={selectedTask}
-                          setSelectedTask={setSelectedTask}/>
+                          setSelectedTask={setSelectedTask} defaultDuration={defaultDuration}/>
                     :
                     null
                 }

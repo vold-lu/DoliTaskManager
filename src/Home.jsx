@@ -88,7 +88,7 @@ const Home = ({apiUrl, apiKey, showOnlyMyTasks, setView, setSelectedTask}) => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <div className={'flex flex-col gap-1 w-full overflow-y-auto max-h-[475px]'}>
+            <div className={'flex flex-col gap-1 w-full overflow-y-auto h-[485px]'}>
                 {isLoading ?
                     <Loader className={'mx-auto text-center'}/>
                     :
