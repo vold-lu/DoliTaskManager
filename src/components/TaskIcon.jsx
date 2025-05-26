@@ -6,17 +6,17 @@ import InformationCircle from "../svg/InformationCircle.jsx";
 
 const Icons = {
     'DEFAULT': InformationCircle,
-    'SUPPORT': QuestionMarkCircle,
+    'SUPPORT_N1': QuestionMarkCircle,
     'BUG': BugAnt,
-    'Developer escalation': ExclamationTriangle,
+    'SUPPORT_N2': ExclamationTriangle,
     'FEATURE': PlusCircle,
 }
 
 const IconStyles = {
     'DEFAULT': 'text-blue-500',
-    'SUPPORT': 'text-yellow-500',
+    'SUPPORT_N1': 'text-yellow-500',
     'BUG': 'text-red-500',
-    'Developer escalation': 'text-orange-500',
+    'SUPPORT_N2': 'text-orange-500',
     'FEATURE': 'text-green-500',
 }
 
