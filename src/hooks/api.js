@@ -12,6 +12,18 @@ export const useAPIData = (endpoint, token) => {
         });
     };
 
+    const getPinnedTasks = async (params) => {
+        const url = `${endpoint}/custom/vold/ticket_api.php?action=get_pinned_tasks&${new URLSearchParams(params).toString()}`;
+
+        return apiFetch(url, {
+            method: 'GET',
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+    };
+
     const getTask = async (params) => {
         const url = `${endpoint}/custom/vold/ticket_api.php?action=get_task&${new URLSearchParams(params).toString()}`;
 
@@ -37,6 +49,19 @@ export const useAPIData = (endpoint, token) => {
         });
     };
 
+    const updateTaskPinned = async (ref, is_pinned) => {
+        const url = `${endpoint}/custom/vold/ticket_api.php?action=set_task_pinned&ref=` + ref;
+
+        return apiFetch(url, {
+            method: 'PUT',
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: {is_pinned}
+        });
+    };
+
 
     const apiFetch = async (url, options = {}) => {
         try {
@@ -59,5 +84,5 @@ export const useAPIData = (endpoint, token) => {
         return await response.json();
     };
 
-    return {searchTasks, getTask, updateTaskTime};
+    return {searchTasks, getTask, updateTaskTime, updateTaskPinned, getPinnedTasks};
 };
