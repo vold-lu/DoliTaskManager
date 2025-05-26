@@ -2,8 +2,6 @@ import React, {useEffect, useState} from 'react';
 import {useAPIData} from "./hooks/api.js";
 import Loader from "./components/Loader.jsx";
 import config from './config.js';
-import TaskIcon from "./components/TaskIcon.jsx";
-import Star from "./svg/Star.jsx";
 import TaskItem from "./components/Taskitem.jsx";
 
 const Home = ({apiUrl, apiKey, showOnlyMyTasks, setView, setSelectedTask}) => {
@@ -13,6 +11,7 @@ const Home = ({apiUrl, apiKey, showOnlyMyTasks, setView, setSelectedTask}) => {
     const [tasks, setTasks] = useState([]);
     const [pinnedTasks, setPinnedTasks] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [isLoadingPinned, setIsLoadingPinned] = useState(false);
 
     useEffect(() => {
         if (!apiKey || !apiUrl) return;
@@ -44,11 +43,14 @@ const Home = ({apiUrl, apiKey, showOnlyMyTasks, setView, setSelectedTask}) => {
         };
 
         const fetchPinnedTasks = async () => {
+            setIsLoadingPinned(true);
             try {
                 const pinnedItems = await getPinnedTasks();
                 setPinnedTasks(pinnedItems);
             } catch (error) {
                 console.error("Erreur lors de la récupération des tâches épinglées:", error);
+            } finally {
+                setIsLoadingPinned(false);
             }
         };
 
@@ -87,6 +89,8 @@ const Home = ({apiUrl, apiKey, showOnlyMyTasks, setView, setSelectedTask}) => {
 
     async function setTaskPinned(currentTask) {
         setIsLoading(true);
+        setIsLoadingPinned(true);
+
         try {
             await updateTaskPinned(currentTask.ref, !currentTask?.is_pinned);
 
@@ -104,11 +108,13 @@ const Home = ({apiUrl, apiKey, showOnlyMyTasks, setView, setSelectedTask}) => {
             console.error("Erreur lors de la mise à jour du pin:", error);
         } finally {
             setIsLoading(false);
+            setIsLoadingPinned(false);
         }
     }
 
+
     return (
-        <div className="flex flex-col gap-4 items-center justify-center">
+        <div className="flex flex-col h-[540px] w-full gap-4">
             <input
                 type="text"
                 className="border p-2 w-full rounded"
@@ -117,11 +123,17 @@ const Home = ({apiUrl, apiKey, showOnlyMyTasks, setView, setSelectedTask}) => {
                 onChange={(e) => setSearchTerm(e.target.value)}
             />
 
-            {pinnedTasks && pinnedTasks.length > 0 && (
+            {pinnedTasks && (
                 <div className="w-full">
                     <h2 className="font-bold mb-1">Épinglés</h2>
                     <div className="flex flex-col gap-1">
-                        {pinnedTasks.map((pinnedTask) => (
+                        {isLoadingPinned && <Loader className="mx-auto text-center" />}
+
+                        {!isLoadingPinned && pinnedTasks.length === 0 && (
+                            <p className="text-gray-500">Aucune tâche épinglée.</p>
+                        )}
+
+                        {!isLoadingPinned && pinnedTasks.map((pinnedTask) => (
                             <TaskItem
                                 key={pinnedTask.ref}
                                 task={pinnedTask}
@@ -134,13 +146,13 @@ const Home = ({apiUrl, apiKey, showOnlyMyTasks, setView, setSelectedTask}) => {
                 </div>
             )}
 
-            <div className="w-full">
+            <div className="flex flex-col flex-grow w-full overflow-y-auto">
                 <h2 className="font-bold mb-1">Toutes les tâches</h2>
-                <div className={'flex flex-col gap-1 w-full overflow-y-auto '}>
-                    {isLoading && <Loader className={'mx-auto text-center'}/>}
+                <div className="flex flex-col gap-1 w-full">
+                    {isLoading && <Loader className="mx-auto text-center" />}
 
                     {!isLoading && tasks?.length === 0 && (
-                        <div className={'bg-white rounded p-2 w-full'}>
+                        <div className="bg-white rounded p-2 w-full">
                             <p>Aucun résultat :(</p>
                         </div>
                     )}
