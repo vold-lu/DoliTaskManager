@@ -13,10 +13,12 @@ const Task = ({apiUrl, apiKey, selectedTask, defaultDuration}) => {
     const [selectedDuration, setSelectedDuration] = useState(defaultDuration);
     const [note, setNote] = useState('');
 
-
     useEffect(() => {
         setIsLoading(true)
         setTask(null);
+
+        console.log('HELLO')
+        console.log(selectedTask)
 
         let params = {
             ref: selectedTask.ref,
@@ -97,6 +99,11 @@ const Task = ({apiUrl, apiKey, selectedTask, defaultDuration}) => {
     if (isLoading) {
         return <Loader/>
     }
+
+    if (!task) {
+        return null;
+    }
+
 
     return (
         <div>

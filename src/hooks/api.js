@@ -58,7 +58,7 @@ export const useAPIData = (endpoint, token) => {
                 Authorization: `Bearer ${token}`,
                 'Content-Type': 'application/json'
             },
-            body: {is_pinned}
+            body: JSON.stringify({is_pinned})
         });
     };
 

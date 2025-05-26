@@ -20,16 +20,18 @@ const TaskItem = ({task, selectTask, showOnlyMyTasks, setTaskPinned}) => {
                         {task?.subject}
                     </p>
                 </div>
-                <Star
-                    className={
-                        'ml-auto flex-shrink-0 size-5 ' +
-                        (task?.is_pinned ? 'text-yellow-400' : 'text-gray-300')
-                    }
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        setTaskPinned(task);
-                    }}
-                />
+                <div className={'ml-auto flex-shrink-0 '} onClick={(e) => {
+                    e.stopPropagation();
+                    setTaskPinned(task);
+                }}>
+                    <Star
+                        className={
+                            'size-5 ' +
+                            (task?.is_pinned ? 'text-yellow-400' : 'text-gray-300')
+                        }
+                    />
+                </div>
+
             </div>
         </div>
     );
