@@ -3,24 +3,24 @@ import {useAPIData} from "./hooks/api.js";
 import Loader from "./components/Loader.jsx";
 import config from './config.js';
 import TaskIcon from "./components/TaskIcon.jsx";
+import Star from "./svg/Star.jsx";
+import TaskItem from "./components/Taskitem.jsx";
 
 const Home = ({apiUrl, apiKey, showOnlyMyTasks, setView, setSelectedTask}) => {
-
-    const {searchTasks} = useAPIData(apiUrl, apiKey);
+    const {searchTasks, updateTaskPinned, getPinnedTasks} = useAPIData(apiUrl, apiKey);
 
     const [searchTerm, setSearchTerm] = useState('');
     const [tasks, setTasks] = useState([]);
+    const [pinnedTasks, setPinnedTasks] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
-        if (!apiKey || !apiUrl || isLoading) return;
+        if (!apiKey || !apiUrl) return;
 
         const fetchTasks = async () => {
             setIsLoading(true);
-            setTasks([]);
 
             let currentSearchTerm = searchTerm;
-
             if (!searchTerm) {
                 currentSearchTerm = await findTaskRef();
                 if (currentSearchTerm) {
@@ -28,25 +28,32 @@ const Home = ({apiUrl, apiKey, showOnlyMyTasks, setView, setSelectedTask}) => {
                 }
             }
 
-            const params = {
-                search_term: currentSearchTerm,
-            };
-
+            const params = {search_term: currentSearchTerm};
             if (showOnlyMyTasks === false) {
                 params.view_all_tasks = true;
             }
 
-            searchTasks(params)
-                .then((items) => {
-                    setTasks(items);
-                })
-                .finally(() => {
-                    setIsLoading(false);
-                });
+            try {
+                const items = await searchTasks(params);
+                setTasks(items);
+            } catch (error) {
+                console.error("Erreur lors de la récupération des tâches:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        const fetchPinnedTasks = async () => {
+            try {
+                const pinnedItems = await getPinnedTasks();
+                setPinnedTasks(pinnedItems);
+            } catch (error) {
+                console.error("Erreur lors de la récupération des tâches épinglées:", error);
+            }
         };
 
         fetchTasks();
-
+        fetchPinnedTasks();
     }, [searchTerm, apiUrl, apiKey, showOnlyMyTasks]);
 
     const findTaskRef = async () => {
@@ -73,10 +80,31 @@ const Home = ({apiUrl, apiKey, showOnlyMyTasks, setView, setSelectedTask}) => {
         });
     };
 
-
     function selectTask(currentTask) {
         setSelectedTask(currentTask);
         setView('task');
+    }
+
+    async function setTaskPinned(currentTask) {
+        setIsLoading(true);
+        try {
+            await updateTaskPinned(currentTask.ref, !currentTask?.is_pinned);
+
+            const updatedPinnedTasks = await getPinnedTasks();
+            setPinnedTasks(updatedPinnedTasks);
+
+            const params = {search_term: searchTerm};
+            if (showOnlyMyTasks === false) {
+                params.view_all_tasks = true;
+            }
+            const updatedTasks = await searchTasks(params);
+            setTasks(updatedTasks);
+
+        } catch (error) {
+            console.error("Erreur lors de la mise à jour du pin:", error);
+        } finally {
+            setIsLoading(false);
+        }
     }
 
     return (
@@ -88,40 +116,45 @@ const Home = ({apiUrl, apiKey, showOnlyMyTasks, setView, setSelectedTask}) => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <div className={'flex flex-col gap-1 w-full overflow-y-auto h-[485px]'}>
-                {isLoading ?
-                    <Loader className={'mx-auto text-center'}/>
-                    :
-                    null
-                }
-                {!isLoading && tasks?.length === 0 ?
-                    <div className={'bg-white rounded p-2 w-full'}>
-                        <p>Aucun résultat :(</p>
+
+            {pinnedTasks && pinnedTasks.length > 0 && (
+                <div className="w-full">
+                    <h2 className="font-bold mb-1">Épinglés</h2>
+                    <div className="flex flex-col gap-1">
+                        {pinnedTasks.map((pinnedTask) => (
+                            <TaskItem
+                                key={pinnedTask.ref}
+                                task={pinnedTask}
+                                setTaskPinned={setTaskPinned}
+                                selectTask={selectTask}
+                                showOnlyMyTasks={showOnlyMyTasks}
+                            />
+                        ))}
                     </div>
-                    :
-                    null
-                }
-                {
-                    tasks.map((task) => {
-                        return (
-                            <div key={task.ref}
-                                 className={'bg-white rounded py-2 pr-2 w-full cursor-pointer hover:shadow-lg grid grid-cols-8'}
-                                 onClick={() => selectTask(task)}>
-                                <div className={'col-span-1 flex items-center'}>
-                                    <TaskIcon type={task?.type_code} className={'mx-auto'}/>
-                                </div>
-                                <div className={'col-span-7'}>
-                                    <p className={'font-bold'}>
-                                        {task.ref} {!showOnlyMyTasks && task?.user ? '(' + task?.user + ')' : ''}
-                                    </p>
-                                    <p className={'text-gray-600'}>
-                                        {task?.subject}
-                                    </p>
-                                </div>
-                            </div>
-                        )
-                    })
-                }
+                </div>
+            )}
+
+            <div className="w-full">
+                <h2 className="font-bold mb-1">Toutes les tâches</h2>
+                <div className={'flex flex-col gap-1 w-full overflow-y-auto '}>
+                    {isLoading && <Loader className={'mx-auto text-center'}/>}
+
+                    {!isLoading && tasks?.length === 0 && (
+                        <div className={'bg-white rounded p-2 w-full'}>
+                            <p>Aucun résultat :(</p>
+                        </div>
+                    )}
+
+                    {!isLoading && tasks.map((task) => (
+                        <TaskItem
+                            key={task.ref}
+                            task={task}
+                            setTaskPinned={setTaskPinned}
+                            selectTask={selectTask}
+                            showOnlyMyTasks={showOnlyMyTasks}
+                        />
+                    ))}
+                </div>
             </div>
         </div>
     );
