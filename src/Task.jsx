@@ -17,9 +17,6 @@ const Task = ({apiUrl, apiKey, selectedTask, defaultDuration}) => {
         setIsLoading(true)
         setTask(null);
 
-        console.log('HELLO')
-        console.log(selectedTask)
-
         let params = {
             ref: selectedTask.ref,
         }

@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Settings = ({apiKey, setApiKey, apiUrl, setApiUrl, showOnlyMyTasks, setShowOnlyMyTasks, defaultDuration, setDefaultDuration}) => {
+const Settings = ({apiKey, setApiKey, apiUrl, setApiUrl, showOnlyMyTasks, setShowOnlyMyTasks, defaultDuration, setDefaultDuration, showClosedTasks, setShowClosedTasks}) => {
     return (
         <div className="flex flex-col gap-2 items-center justify-center">
             <label className={'w-full'}>
@@ -44,6 +44,16 @@ const Settings = ({apiKey, setApiKey, apiUrl, setApiUrl, showOnlyMyTasks, setSho
                     className="border rounded"
                     checked={showOnlyMyTasks}
                     onChange={(e) => setShowOnlyMyTasks(e.target.checked)}
+                />
+            </label>
+
+            <label className={'w-full flex gap-2'}>
+                Voir aussi les tickets terminés
+                <input
+                    type="checkbox"
+                    className="border rounded"
+                    checked={showClosedTasks}
+                    onChange={(e) => setShowClosedTasks(e.target.checked)}
                 />
             </label>
         </div>
