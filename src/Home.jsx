@@ -30,11 +30,14 @@ const Home = ({
             setIsLoading(true);
 
             let currentSearchTerm = searchTerm;
-            if (!searchTerm) {
+
+            if (searchTerm === '') {
                 currentSearchTerm = await findTaskRef();
                 if (currentSearchTerm && lastRefFounded !== currentSearchTerm) {
                     setSearchTerm(currentSearchTerm);
                     setLastRefFounded(currentSearchTerm)
+                }else {
+                    currentSearchTerm = '';
                 }
             }
 
