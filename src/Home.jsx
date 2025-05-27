@@ -21,6 +21,7 @@ const Home = ({
     const [pinnedTasks, setPinnedTasks] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isLoadingPinned, setIsLoadingPinned] = useState(false);
+    const [lastRefFounded, setLastRefFounded] = useState('');
 
     useEffect(() => {
         if (!apiKey || !apiUrl) return;
@@ -31,8 +32,9 @@ const Home = ({
             let currentSearchTerm = searchTerm;
             if (!searchTerm) {
                 currentSearchTerm = await findTaskRef();
-                if (currentSearchTerm) {
+                if (currentSearchTerm && lastRefFounded !== currentSearchTerm) {
                     setSearchTerm(currentSearchTerm);
+                    setLastRefFounded(currentSearchTerm)
                 }
             }
 
