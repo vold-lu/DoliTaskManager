@@ -15,6 +15,8 @@ const App = () => {
     const [apiUrl, setApiUrl] = useState('')
     const [defaultDuration, setDefaultDuration] = useState(30)
     const [showOnlyMyTasks, setShowOnlyMyTasks] = useState(true);
+    const [showClosedTasks, setShowClosedTasks] = useState(false);
+    const [pinnedTaskRefs, setPinnedTaskRefs] = useState([]);
 
     const [selectedTask, setSelectedTask] = useState(null);
 
@@ -37,9 +39,21 @@ const App = () => {
             }
         })
 
+        chrome.storage.sync.get(['showClosedTasks'], (result) => {
+            if (result.showClosedTasks !== undefined) {
+                setShowClosedTasks(result.showClosedTasks)
+            }
+        })
+
         chrome.storage.sync.get(['defaultDuration'], (result) => {
             if (result.defaultDuration !== undefined) {
                 setDefaultDuration(result.defaultDuration)
+            }
+        })
+
+        chrome.storage.sync.get(['pinnedTaskRefs'], (result) => {
+            if (result.pinnedTaskRefs !== undefined) {
+                setPinnedTaskRefs(result.pinnedTaskRefs)
             }
         })
     }, [])
@@ -62,11 +76,36 @@ const App = () => {
         })
     }
 
+    const saveShowClosedTasks = (showClosedTasks) => {
+        chrome.storage.sync.set({showOnlyActiveTasks: showClosedTasks}, () => {
+            setShowClosedTasks(showClosedTasks)
+        })
+    }
+
     const saveDefaultDuration = (currentDefaultDuration) => {
         chrome.storage.sync.set({defaultDuration: currentDefaultDuration}, () => {
             setDefaultDuration(currentDefaultDuration)
         })
     }
+
+    const savePinnedTaskRef = (currentPinnedTaskRef, value) => {
+        let updatedPinnedTaskRefs;
+
+        if (value) {
+            updatedPinnedTaskRefs = [...pinnedTaskRefs];
+            if (!updatedPinnedTaskRefs.includes(currentPinnedTaskRef)) {
+                updatedPinnedTaskRefs.push(currentPinnedTaskRef);
+            }
+        } else {
+            updatedPinnedTaskRefs = pinnedTaskRefs.filter(ref => ref !== currentPinnedTaskRef);
+        }
+
+        chrome.storage.sync.set({pinnedTaskRefs: updatedPinnedTaskRefs}, () => {
+            console.log(updatedPinnedTaskRefs)
+            setPinnedTaskRefs(updatedPinnedTaskRefs);
+        });
+    };
+
 
     return (
         <>
@@ -75,8 +114,10 @@ const App = () => {
 
                 {view === 'home' ?
                     <Home apiKey={apiKey} apiUrl={apiUrl} showOnlyMyTasks={showOnlyMyTasks}
+                          showClosedTasks={showClosedTasks}
                           setView={setView} selectedTask={selectedTask}
-                          setSelectedTask={setSelectedTask}/>
+                          setSelectedTask={setSelectedTask} pinnedTaskRefs={pinnedTaskRefs}
+                          savePinnedTaskRef={savePinnedTaskRef}/>
                     :
                     null
                 }
@@ -86,6 +127,8 @@ const App = () => {
                               setApiUrl={saveApiUrl} apiUrl={apiUrl}
                               setShowOnlyMyTasks={saveShowOnlyMyTasks} showOnlyMyTasks={showOnlyMyTasks}
                               setDefaultDuration={saveDefaultDuration} defaultDuration={defaultDuration}
+                              setShowClosedTasks={saveShowClosedTasks}
+                              showClosedTasks={showClosedTasks}
                     />
                     :
                     null

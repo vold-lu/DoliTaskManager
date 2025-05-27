@@ -4,8 +4,17 @@ import Loader from "./components/Loader.jsx";
 import config from './config.js';
 import TaskItem from "./components/Taskitem.jsx";
 
-const Home = ({apiUrl, apiKey, showOnlyMyTasks, setView, setSelectedTask}) => {
-    const {searchTasks, updateTaskPinned, getPinnedTasks} = useAPIData(apiUrl, apiKey);
+const Home = ({
+                  apiUrl,
+                  apiKey,
+                  showOnlyMyTasks,
+                  showClosedTasks,
+                  setView,
+                  setSelectedTask,
+                  pinnedTaskRefs,
+                  savePinnedTaskRef
+              }) => {
+    const {searchTasks, getTask} = useAPIData(apiUrl, apiKey);
 
     const [searchTerm, setSearchTerm] = useState('');
     const [tasks, setTasks] = useState([]);
@@ -32,9 +41,17 @@ const Home = ({apiUrl, apiKey, showOnlyMyTasks, setView, setSelectedTask}) => {
                 params.view_all_tasks = true;
             }
 
+            if (showClosedTasks === true) {
+                params.is_closed = true;
+            }
+
             try {
-                const items = await searchTasks(params);
-                setTasks(items ?? []);
+                const items = await searchTasks(params) || [];
+                const itemsWithPinned = items.map(item => ({
+                    ...item,
+                    is_pinned: pinnedTaskRefs?.includes(item.ref) || false
+                }));
+                setTasks(itemsWithPinned);
             } catch (error) {
                 console.error("Erreur lors de la récupération des tâches:", error);
             } finally {
@@ -43,16 +60,27 @@ const Home = ({apiUrl, apiKey, showOnlyMyTasks, setView, setSelectedTask}) => {
         };
 
         fetchTasks();
-    }, [searchTerm, apiUrl, apiKey, showOnlyMyTasks]);
+    }, [searchTerm, apiUrl, apiKey, showOnlyMyTasks, pinnedTaskRefs]);
 
     useEffect(() => {
         if (!apiKey || !apiUrl) return;
 
+        console.log('useEffect fetchPinnedTasks')
+
         const fetchPinnedTasks = async () => {
             setIsLoadingPinned(true);
+
             try {
-                const pinnedItems = await getPinnedTasks();
-                setPinnedTasks(pinnedItems ?? []);
+                const tasks = await Promise.all(
+                    (pinnedTaskRefs ?? []).map(ref =>
+                        getTask({ref}).then(task => {
+                            if (task) task.is_pinned = true;
+                            return task;
+                        })
+                    )
+                );
+                const validTasks = tasks.filter(task => task !== null && task !== undefined);
+                setPinnedTasks(validTasks);
             } catch (error) {
                 console.error("Erreur lors de la récupération des tâches épinglées:", error);
             } finally {
@@ -60,15 +88,15 @@ const Home = ({apiUrl, apiKey, showOnlyMyTasks, setView, setSelectedTask}) => {
             }
         };
 
-        fetchPinnedTasks();
-    }, [apiUrl, apiKey]);
 
+        fetchPinnedTasks();
+    }, [pinnedTaskRefs, apiUrl, apiKey]);
 
     const findTaskRef = async () => {
         return new Promise((resolve) => {
             chrome.tabs.query({active: true, currentWindow: true}, function (tabs) {
                 const tab = tabs[0];
-                if (!tab || !tab.url) {
+                if (!tab?.url) {
                     return resolve('');
                 }
 
@@ -93,27 +121,8 @@ const Home = ({apiUrl, apiKey, showOnlyMyTasks, setView, setSelectedTask}) => {
         setView('task');
     }
 
-    async function setTaskPinned(currentTask) {
-        setIsLoadingPinned(true);
-
-        try {
-            await updateTaskPinned(currentTask.ref, !currentTask?.is_pinned);
-
-            const updatedPinnedTasks = await getPinnedTasks();
-            setPinnedTasks(updatedPinnedTasks ?? []);
-
-            const params = {search_term: searchTerm};
-            if (showOnlyMyTasks === false) {
-                params.view_all_tasks = true;
-            }
-            const updatedTasks = await searchTasks(params);
-            setTasks(updatedTasks ?? []);
-
-        } catch (error) {
-            console.error("Erreur lors de la mise à jour du pin:", error);
-        } finally {
-            setIsLoadingPinned(false);
-        }
+    function setTaskPinned(currentTask) {
+        savePinnedTaskRef(currentTask.ref, !currentTask.is_pinned);
     }
 
     return (
@@ -121,7 +130,7 @@ const Home = ({apiUrl, apiKey, showOnlyMyTasks, setView, setSelectedTask}) => {
             <input
                 type="text"
                 className="border p-2 w-full rounded"
-                placeholder="Rechercher référence de la tache"
+                placeholder="Rechercher référence de la tâche"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -130,7 +139,7 @@ const Home = ({apiUrl, apiKey, showOnlyMyTasks, setView, setSelectedTask}) => {
                 <div className="w-full">
                     <h2 className="font-bold mb-1">Épinglés</h2>
                     <div className="flex flex-col gap-1">
-                        {isLoadingPinned && <Loader className="mx-auto text-center" />}
+                        {isLoadingPinned && <Loader className="mx-auto text-center"/>}
 
                         {!isLoadingPinned && pinnedTasks.length === 0 && (
                             <p className="text-gray-500">Aucune tâche épinglée.</p>
@@ -152,11 +161,11 @@ const Home = ({apiUrl, apiKey, showOnlyMyTasks, setView, setSelectedTask}) => {
             <div className="flex flex-col flex-grow w-full overflow-y-auto">
                 <h2 className="font-bold mb-1">Toutes les tâches</h2>
                 <div className="flex flex-col gap-1 w-full">
-                    {isLoading && <Loader className="mx-auto text-center" />}
+                    {isLoading && <Loader className="mx-auto text-center"/>}
 
-                    {!isLoading && tasks?.length === 0 && (
-                            <p className="text-gray-500">Aucun résultat :(</p>
-                        )}
+                    {!isLoading && tasks.length === 0 && (
+                        <p className="text-gray-500">Aucun résultat :(</p>
+                    )}
 
                     {!isLoading && tasks.map((task) => (
                         <TaskItem

@@ -49,20 +49,6 @@ export const useAPIData = (endpoint, token) => {
         });
     };
 
-    const updateTaskPinned = async (ref, is_pinned) => {
-        const url = `${endpoint}/custom/vold/ticket_api.php?action=set_task_pinned&ref=` + ref;
-
-        return apiFetch(url, {
-            method: 'PUT',
-            headers: {
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({is_pinned})
-        });
-    };
-
-
     const apiFetch = async (url, options = {}) => {
         try {
             const response = await fetch(url, options);
@@ -84,5 +70,5 @@ export const useAPIData = (endpoint, token) => {
         return await response.json();
     };
 
-    return {searchTasks, getTask, updateTaskTime, updateTaskPinned, getPinnedTasks};
+    return {searchTasks, getTask, updateTaskTime, getPinnedTasks};
 };
