@@ -77,7 +77,7 @@ const App = () => {
     }
 
     const saveShowClosedTasks = (showClosedTasks) => {
-        chrome.storage.sync.set({showOnlyActiveTasks: showClosedTasks}, () => {
+        chrome.storage.sync.set({showClosedTasks: showClosedTasks}, () => {
             setShowClosedTasks(showClosedTasks)
         })
     }
