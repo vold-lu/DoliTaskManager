@@ -12,8 +12,8 @@ export const useAPIData = (endpoint, token) => {
         });
     };
 
-    const getPinnedTasks = async (params) => {
-        const url = `${endpoint}/custom/vold/ticket_api.php?action=get_pinned_tasks&${new URLSearchParams(params).toString()}`;
+    const getPinnedTasks = async () => {
+        const url = `${endpoint}/custom/vold/ticket_api.php?action=get_pinned_tasks`;
 
         return apiFetch(url, {
             method: 'GET',

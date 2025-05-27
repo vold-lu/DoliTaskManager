@@ -34,7 +34,7 @@ const Home = ({apiUrl, apiKey, showOnlyMyTasks, setView, setSelectedTask}) => {
 
             try {
                 const items = await searchTasks(params);
-                setTasks(items);
+                setTasks(items ?? []);
             } catch (error) {
                 console.error("Erreur lors de la récupération des tâches:", error);
             } finally {
@@ -42,11 +42,17 @@ const Home = ({apiUrl, apiKey, showOnlyMyTasks, setView, setSelectedTask}) => {
             }
         };
 
+        fetchTasks();
+    }, [searchTerm, apiUrl, apiKey, showOnlyMyTasks]);
+
+    useEffect(() => {
+        if (!apiKey || !apiUrl) return;
+
         const fetchPinnedTasks = async () => {
             setIsLoadingPinned(true);
             try {
                 const pinnedItems = await getPinnedTasks();
-                setPinnedTasks(pinnedItems);
+                setPinnedTasks(pinnedItems ?? []);
             } catch (error) {
                 console.error("Erreur lors de la récupération des tâches épinglées:", error);
             } finally {
@@ -54,9 +60,9 @@ const Home = ({apiUrl, apiKey, showOnlyMyTasks, setView, setSelectedTask}) => {
             }
         };
 
-        fetchTasks();
         fetchPinnedTasks();
-    }, [searchTerm, apiUrl, apiKey, showOnlyMyTasks]);
+    }, [apiUrl, apiKey]);
+
 
     const findTaskRef = async () => {
         return new Promise((resolve) => {
@@ -88,30 +94,27 @@ const Home = ({apiUrl, apiKey, showOnlyMyTasks, setView, setSelectedTask}) => {
     }
 
     async function setTaskPinned(currentTask) {
-        setIsLoading(true);
         setIsLoadingPinned(true);
 
         try {
             await updateTaskPinned(currentTask.ref, !currentTask?.is_pinned);
 
             const updatedPinnedTasks = await getPinnedTasks();
-            setPinnedTasks(updatedPinnedTasks);
+            setPinnedTasks(updatedPinnedTasks ?? []);
 
             const params = {search_term: searchTerm};
             if (showOnlyMyTasks === false) {
                 params.view_all_tasks = true;
             }
             const updatedTasks = await searchTasks(params);
-            setTasks(updatedTasks);
+            setTasks(updatedTasks ?? []);
 
         } catch (error) {
             console.error("Erreur lors de la mise à jour du pin:", error);
         } finally {
-            setIsLoading(false);
             setIsLoadingPinned(false);
         }
     }
-
 
     return (
         <div className="flex flex-col h-[540px] w-full gap-4">
@@ -152,10 +155,8 @@ const Home = ({apiUrl, apiKey, showOnlyMyTasks, setView, setSelectedTask}) => {
                     {isLoading && <Loader className="mx-auto text-center" />}
 
                     {!isLoading && tasks?.length === 0 && (
-                        <div className="bg-white rounded p-2 w-full">
-                            <p>Aucun résultat :(</p>
-                        </div>
-                    )}
+                            <p className="text-gray-500">Aucun résultat :(</p>
+                        )}
 
                     {!isLoading && tasks.map((task) => (
                         <TaskItem
