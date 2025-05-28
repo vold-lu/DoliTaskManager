@@ -47,7 +47,7 @@ const Home = ({
             }
 
             if (showClosedTasks === true) {
-                params.is_closed = true;
+                params.closed_only = true;
             }
 
             try {
