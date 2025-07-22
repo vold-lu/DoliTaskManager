@@ -27,26 +27,25 @@ const Header = ({view, setView}) => {
     }
 
     return (
-        <div className={'flex flex-row justify-between bg-blue-700 p-2 items-center text-white'}>
-            <div className={'flex flex-row gap-2 items-center'}>
-                {getBackView() ?
-                    <div onClick={() => setView(getBackView())} className={'cursor-pointer'}>
-                        <ArrowLeft />
-                    </div>
-                    :
-                    null
+        <div className={'bg-gradient-to-r from-blue-500 to-purple-700 p-2 text-white'}>
+            <div className={'flex flex-row justify-between items-center'}>
+                <div className={'flex flex-row gap-2 items-center'}>
+                    {getBackView()
+                        ? <div onClick={() => setView(getBackView())} className={'cursor-pointer'}>
+                            <ArrowLeft/>
+                        </div>
+                        : null
+                    }
+                    <p className={'text-lg font-bold'}><Title/></p>
+                </div>
+                {
+                    view !== 'settings'
+                        ? <div onClick={() => setView('settings')} className={'cursor-pointer'}>
+                            <Setting/>
+                        </div>
+                        : <div></div>
                 }
-                <p className={'text-lg font-bold'}><Title/></p>
             </div>
-            {
-                view !== 'settings' ?
-                    <div onClick={() => setView('settings')} className={'cursor-pointer'}>
-                        <Setting/>
-                    </div>
-                    :
-                    <div></div>
-            }
-
         </div>
     );
 };

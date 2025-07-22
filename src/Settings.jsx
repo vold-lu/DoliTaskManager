@@ -2,7 +2,7 @@ import React from 'react';
 
 const Settings = ({apiKey, setApiKey, apiUrl, setApiUrl, showOnlyMyTasks, setShowOnlyMyTasks, defaultDuration, setDefaultDuration, showClosedTasks, setShowClosedTasks}) => {
     return (
-        <div className="flex flex-col gap-2 items-center justify-center">
+        <div className="flex flex-col gap-2 items-center p-2 bg-blue-50 h-full">
             <label className={'w-full'}>
                 URL de l'API
                 <input

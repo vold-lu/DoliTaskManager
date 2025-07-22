@@ -1,3 +1,4 @@
+/* global chrome */
 import React, {useEffect, useRef, useState} from 'react';
 import {useAPIData} from "./hooks/api.js";
 import Loader from "./components/Loader.jsx";
@@ -83,7 +84,9 @@ const Home = ({
             }
         };
 
-        fetchTasks();
+        fetchTasks().catch(error => {
+            console.error("Erreur lors de la récupération des tâches:", error);
+        });
     }, [searchTerm, apiUrl, apiKey, showOnlyMyTasks, pinnedTaskRefs]);
 
     useEffect(() => {
@@ -108,7 +111,9 @@ const Home = ({
                 setIsLoadingPinned(false);
             }
         };
-        fetchPinnedTasks();
+        fetchPinnedTasks().catch(error => {
+            console.error("Erreur lors de la récupération des tâches épinglées:", error);
+        });
     }, [pinnedTaskRefs, apiUrl, apiKey]);
 
     const findTaskRef = async () => {
@@ -149,54 +154,50 @@ const Home = ({
         savePinnedTaskRef(currentTask.ref, !currentTask.is_pinned);
     }
 
-    // Handlers for scroll into view on section header click
-    const handlePinnedHeaderClick = () => {
-        pinnedHeaderRef.current && pinnedHeaderRef.current.scrollIntoView({behavior: "smooth", block: "start"});
-    };
-    const handleTasksHeaderClick = () => {
-        tasksHeaderRef.current && tasksHeaderRef.current.scrollIntoView({behavior: "smooth", block: "start"});
-    };
-
     return (
-        <div
-            className="h-[540px] overflow-hidden bg-blue-50 rounded-xl flex flex-col w-full">
+        <div className="h-[540px] overflow-hidden bg-blue-50 flex flex-col w-full">
             {/* Scrollable content */}
-            <div className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-0">
-                {/* Search bar sticky */}
+            <div className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-1">
+                {/* Search bar sticky with gradient and glass effect */}
                 <div ref={searchBarRef}
-                     className="sticky z-10 bg-blue-50 pb-2"
+                     className="sticky z-10 bg-gradient-to-r from-blue-500 to-purple-700 pb-2"
                      style={{top: 0}}>
-                    <div className="flex items-center gap-2">
-                        <input
-                            type="text"
-                            className="flex-grow rounded-full border border-gray-300 px-4 py-2 bg-white shadow-sm focus:ring-2 focus:ring-blue-300"
-                            placeholder="Rechercher une tâche…"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
+                    <div className="flex items-center gap-2 px-2">
+                        <div className="relative flex-grow">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg className="h-5 w-5 text-white/70" fill="none" stroke="currentColor"
+                                     viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+                                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
+                            </div>
+                            <input
+                                type="search"
+                                className="w-full pl-10 pr-4 py-2 bg-white/20 border border-white/30 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/50 focus:bg-white/30 transition-all duration-300 shadow-sm"
+                                placeholder="Rechercher une tâche…"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </div>
                     </div>
                 </div>
+
                 {/* Section Épinglés sticky header */}
-                <div
-                    ref={pinnedHeaderRef}
-                    className="sticky z-10 bg-blue-50 py-1 cursor-pointer select-none"
-                    style={{top: searchBarHeight}}
-                    onClick={handlePinnedHeaderClick}
-                >
+                <div ref={pinnedHeaderRef}
+                     className="sticky z-10 bg-blue-50 py-1 px-2"
+                     style={{top: searchBarHeight}}>
                     <div className="flex items-center gap-1 text-yellow-700 font-semibold text-sm">
                         <span>Épinglés</span>
-                        <span className="text-xs font-normal text-gray-400">
-              ({pinnedTasks.length})
-            </span>
+                        <span className="text-xs font-normal text-gray-400">({pinnedTasks.length})</span>
                     </div>
                 </div>
 
                 {/* Liste des pinned tasks */}
-                <div className="flex flex-col gap-2 px-0 pb-2">
+                <div className="flex flex-col gap-2 px-2 pb-2">
                     {isLoadingPinned && <Loader className="mx-auto text-center"/>}
-                    {!isLoadingPinned && pinnedTasks.length === 0 && (
+                    {!isLoadingPinned && pinnedTasks.length === 0 &&
                         <p className="text-gray-400 text-sm">Aucune tâche épinglée.</p>
-                    )}
+                    }
                     {!isLoadingPinned &&
                         pinnedTasks.map((pinnedTask) => (
                             <TaskItem
@@ -209,28 +210,25 @@ const Home = ({
                             />
                         ))}
                 </div>
+
                 {/* Toutes les tâches sticky header */}
-                <div
-                    ref={tasksHeaderRef}
-                    className="sticky z-10 bg-blue-50 py-1 cursor-pointer select-none"
-                    style={{top: searchBarHeight + pinnedHeaderHeight}}
-                    onClick={handleTasksHeaderClick}
-                >
+                <div ref={tasksHeaderRef}
+                    className="sticky z-10 bg-blue-50 py-1 px-2"
+                    style={{top: searchBarHeight + pinnedHeaderHeight}}>
                     <div className="flex items-center gap-1 text-blue-700 font-semibold text-sm">
                         <span>Toutes les tâches</span>
                         <span className="text-xs font-normal text-gray-400">({tasks.length})</span>
                     </div>
                 </div>
+
                 {/* Liste des tasks */}
-                <div className="flex flex-col gap-2 w-full pb-2">
+                <div className="flex flex-col gap-2 w-full pb-2 px-2">
                     {isLoading && <Loader className="mx-auto text-center"/>}
-                    {!isLoading && tasks.length === 0 && (
+                    {!isLoading && tasks.length === 0 &&
                         <p className="text-gray-400 text-sm">Aucun résultat :(</p>
-                    )}
-                    {!isLoading &&
-                        tasks.map((task) => (
-                            <TaskItem
-                                key={task.ref}
+                    }
+                    {!isLoading && tasks.map((task) => (
+                            <TaskItem key={task.ref}
                                 className="bg-white border border-gray-200 rounded-lg shadow px-3 py-2"
                                 task={task}
                                 setTaskPinned={setTaskPinned}
