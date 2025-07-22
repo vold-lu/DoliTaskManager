@@ -2,10 +2,10 @@ import TaskIcon from "./TaskIcon.jsx";
 import Star from "../svg/Star.jsx";
 import React from "react";
 
-const TaskItem = ({task, selectTask, showOnlyMyTasks, setTaskPinned}) => {
+const TaskItem = ({className, task, selectTask, showOnlyMyTasks, setTaskPinned}) => {
     return (
         <div
-            className={'bg-white rounded py-2 pr-2 w-full cursor-pointer hover:shadow-lg grid grid-cols-8'}
+            className={'bg-white rounded py-2 pr-2 w-full cursor-pointer hover:shadow-lg grid grid-cols-8 ' + className}
             onClick={() => selectTask(task)}
         >
             <div className={'col-span-1 flex items-center'}>
@@ -38,4 +38,3 @@ const TaskItem = ({task, selectTask, showOnlyMyTasks, setTaskPinned}) => {
 };
 
 export default TaskItem;
-

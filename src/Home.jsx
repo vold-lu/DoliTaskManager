@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {useAPIData} from "./hooks/api.js";
 import Loader from "./components/Loader.jsx";
 import config from './config.js';
@@ -23,6 +23,26 @@ const Home = ({
     const [isLoadingPinned, setIsLoadingPinned] = useState(false);
     const [lastRefFounded, setLastRefFounded] = useState('');
 
+    // Sticky headers refs & heights for auto top calculation
+    const searchBarRef = useRef(null);
+    const pinnedHeaderRef = useRef(null);
+    const tasksHeaderRef = useRef(null);
+
+    const [searchBarHeight, setSearchBarHeight] = useState(0);
+    const [pinnedHeaderHeight, setPinnedHeaderHeight] = useState(0);
+
+    // Measure sticky blocks heights on mount and window resize
+    useEffect(() => {
+        function updateHeights() {
+            setSearchBarHeight(searchBarRef.current ? searchBarRef.current.offsetHeight : 0);
+            setPinnedHeaderHeight(pinnedHeaderRef.current ? pinnedHeaderRef.current.offsetHeight : 0);
+        }
+
+        updateHeights();
+        window.addEventListener('resize', updateHeights);
+        return () => window.removeEventListener('resize', updateHeights);
+    }, []);
+
     useEffect(() => {
         if (!apiKey || !apiUrl) return;
 
@@ -35,8 +55,8 @@ const Home = ({
                 currentSearchTerm = await findTaskRef();
                 if (currentSearchTerm && lastRefFounded !== currentSearchTerm) {
                     setSearchTerm(currentSearchTerm);
-                    setLastRefFounded(currentSearchTerm)
-                }else {
+                    setLastRefFounded(currentSearchTerm);
+                } else {
                     currentSearchTerm = '';
                 }
             }
@@ -45,7 +65,6 @@ const Home = ({
             if (showOnlyMyTasks === false) {
                 params.view_all_tasks = true;
             }
-
             if (showClosedTasks === true) {
                 params.closed_only = true;
             }
@@ -70,11 +89,8 @@ const Home = ({
     useEffect(() => {
         if (!apiKey || !apiUrl) return;
 
-        console.log('useEffect fetchPinnedTasks')
-
         const fetchPinnedTasks = async () => {
             setIsLoadingPinned(true);
-
             try {
                 const tasks = await Promise.all(
                     (pinnedTaskRefs ?? []).map(ref =>
@@ -92,8 +108,6 @@ const Home = ({
                 setIsLoadingPinned(false);
             }
         };
-
-
         fetchPinnedTasks();
     }, [pinnedTaskRefs, apiUrl, apiKey]);
 
@@ -110,6 +124,11 @@ const Home = ({
                 const pathname = url.pathname;
 
                 if (hostname === config.ATLASSIAN_HOSTNAME) {
+                    // Priorité à selectedIssue
+                    if (url.searchParams.has("selectedIssue")) {
+                        return resolve(url.searchParams.get("selectedIssue"));
+                    }
+
                     const matches = pathname.match(/([A-Z]+-\d+)/g);
                     if (matches && matches.length) {
                         return resolve(matches[0]);
@@ -130,59 +149,98 @@ const Home = ({
         savePinnedTaskRef(currentTask.ref, !currentTask.is_pinned);
     }
 
+    // Handlers for scroll into view on section header click
+    const handlePinnedHeaderClick = () => {
+        pinnedHeaderRef.current && pinnedHeaderRef.current.scrollIntoView({behavior: "smooth", block: "start"});
+    };
+    const handleTasksHeaderClick = () => {
+        tasksHeaderRef.current && tasksHeaderRef.current.scrollIntoView({behavior: "smooth", block: "start"});
+    };
+
     return (
-        <div className="flex flex-col h-[540px] w-full gap-4">
-            <input
-                type="text"
-                className="border p-2 w-full rounded"
-                placeholder="Rechercher référence de la tâche"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-            />
+        <div
+            className="h-[540px] overflow-hidden bg-blue-50 rounded-xl flex flex-col w-full">
+            {/* Scrollable content */}
+            <div className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-0">
+                {/* Search bar sticky */}
+                <div ref={searchBarRef}
+                     className="sticky z-10 bg-blue-50 pb-2"
+                     style={{top: 0}}>
+                    <div className="flex items-center gap-2">
+                        <input
+                            type="text"
+                            className="flex-grow rounded-full border border-gray-300 px-4 py-2 bg-white shadow-sm focus:ring-2 focus:ring-blue-300"
+                            placeholder="Rechercher une tâche…"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+                </div>
+                {/* Section Épinglés sticky header */}
+                <div
+                    ref={pinnedHeaderRef}
+                    className="sticky z-10 bg-blue-50 py-1 cursor-pointer select-none"
+                    style={{top: searchBarHeight}}
+                    onClick={handlePinnedHeaderClick}
+                >
+                    <div className="flex items-center gap-1 text-yellow-700 font-semibold text-sm">
+                        <span>Épinglés</span>
+                        <span className="text-xs font-normal text-gray-400">
+              ({pinnedTasks.length})
+            </span>
+                    </div>
+                </div>
 
-            {pinnedTasks && (
-                <div className="w-full">
-                    <h2 className="font-bold mb-1">Épinglés</h2>
-                    <div className="flex flex-col gap-1">
-                        {isLoadingPinned && <Loader className="mx-auto text-center"/>}
-
-                        {!isLoadingPinned && pinnedTasks.length === 0 && (
-                            <p className="text-gray-500">Aucune tâche épinglée.</p>
-                        )}
-
-                        {!isLoadingPinned && pinnedTasks.map((pinnedTask) => (
+                {/* Liste des pinned tasks */}
+                <div className="flex flex-col gap-2 px-0 pb-2">
+                    {isLoadingPinned && <Loader className="mx-auto text-center"/>}
+                    {!isLoadingPinned && pinnedTasks.length === 0 && (
+                        <p className="text-gray-400 text-sm">Aucune tâche épinglée.</p>
+                    )}
+                    {!isLoadingPinned &&
+                        pinnedTasks.map((pinnedTask) => (
                             <TaskItem
                                 key={pinnedTask.ref}
+                                className="bg-yellow-50 border border-yellow-200 rounded-lg shadow px-3 py-2"
                                 task={pinnedTask}
                                 setTaskPinned={setTaskPinned}
                                 selectTask={selectTask}
                                 showOnlyMyTasks={showOnlyMyTasks}
                             />
                         ))}
+                </div>
+                {/* Toutes les tâches sticky header */}
+                <div
+                    ref={tasksHeaderRef}
+                    className="sticky z-10 bg-blue-50 py-1 cursor-pointer select-none"
+                    style={{top: searchBarHeight + pinnedHeaderHeight}}
+                    onClick={handleTasksHeaderClick}
+                >
+                    <div className="flex items-center gap-1 text-blue-700 font-semibold text-sm">
+                        <span>Toutes les tâches</span>
+                        <span className="text-xs font-normal text-gray-400">({tasks.length})</span>
                     </div>
                 </div>
-            )}
-
-            <div className="flex flex-col flex-grow w-full overflow-y-auto">
-                <h2 className="font-bold mb-1">Toutes les tâches</h2>
-                <div className="flex flex-col gap-1 w-full">
+                {/* Liste des tasks */}
+                <div className="flex flex-col gap-2 w-full pb-2">
                     {isLoading && <Loader className="mx-auto text-center"/>}
-
                     {!isLoading && tasks.length === 0 && (
-                        <p className="text-gray-500">Aucun résultat :(</p>
+                        <p className="text-gray-400 text-sm">Aucun résultat :(</p>
                     )}
-
-                    {!isLoading && tasks.map((task) => (
-                        <TaskItem
-                            key={task.ref}
-                            task={task}
-                            setTaskPinned={setTaskPinned}
-                            selectTask={selectTask}
-                            showOnlyMyTasks={showOnlyMyTasks}
-                        />
-                    ))}
+                    {!isLoading &&
+                        tasks.map((task) => (
+                            <TaskItem
+                                key={task.ref}
+                                className="bg-white border border-gray-200 rounded-lg shadow px-3 py-2"
+                                task={task}
+                                setTaskPinned={setTaskPinned}
+                                selectTask={selectTask}
+                                showOnlyMyTasks={showOnlyMyTasks}
+                            />
+                        ))}
                 </div>
             </div>
+
         </div>
     );
 };
