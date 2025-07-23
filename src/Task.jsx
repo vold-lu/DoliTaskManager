@@ -103,7 +103,7 @@ const Task = ({apiUrl, apiKey, selectedTask, defaultDuration}) => {
 
 
     return (
-        <div>
+        <div className={'p-2 bg-blue-50 h-full'}>
             <h1 className={'text-2xl font-bold mb-2 flex flex-row gap-2 text-center items-center w-full justify-center'}>
                 <TaskIcon type={task.type_code}/>
                 <span>{task?.ref}</span>
