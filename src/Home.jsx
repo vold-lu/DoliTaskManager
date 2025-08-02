@@ -16,12 +16,22 @@ const Home = ({
               }) => {
     const {searchTasks, getTask} = useAPIData(apiUrl, apiKey);
 
+    const [inputValue, setInputValue] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
     const [tasks, setTasks] = useState([]);
     const [pinnedTasks, setPinnedTasks] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isLoadingPinned, setIsLoadingPinned] = useState(false);
     const [lastRefFounded, setLastRefFounded] = useState('');
+
+    // DEBOUNCE
+    useEffect(() => {
+        const delay = setTimeout(() => {
+            setSearchTerm(inputValue);
+        }, 400);
+
+        return () => clearTimeout(delay); // réinitialisation si frappe avant la fin du délai
+    }, [inputValue]);
 
     useEffect(() => {
         if (!apiKey || !apiUrl) return;
@@ -34,9 +44,9 @@ const Home = ({
             if (searchTerm === '') {
                 currentSearchTerm = await findTaskRef();
                 if (currentSearchTerm && lastRefFounded !== currentSearchTerm) {
-                    setSearchTerm(currentSearchTerm);
-                    setLastRefFounded(currentSearchTerm)
-                }else {
+                    setInputValue(currentSearchTerm); // ← met aussi à jour le champ input
+                    setLastRefFounded(currentSearchTerm);
+                } else {
                     currentSearchTerm = '';
                 }
             }
@@ -65,12 +75,10 @@ const Home = ({
         };
 
         fetchTasks();
-    }, [searchTerm, apiUrl, apiKey, showOnlyMyTasks, pinnedTaskRefs]);
+    }, [searchTerm, apiUrl, apiKey, showOnlyMyTasks, showClosedTasks, pinnedTaskRefs]);
 
     useEffect(() => {
         if (!apiKey || !apiUrl) return;
-
-        console.log('useEffect fetchPinnedTasks')
 
         const fetchPinnedTasks = async () => {
             setIsLoadingPinned(true);
@@ -92,7 +100,6 @@ const Home = ({
                 setIsLoadingPinned(false);
             }
         };
-
 
         fetchPinnedTasks();
     }, [pinnedTaskRefs, apiUrl, apiKey]);
@@ -136,20 +143,18 @@ const Home = ({
                 type="text"
                 className="border p-2 w-full rounded"
                 placeholder="Rechercher référence de la tâche"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
             />
 
             {pinnedTasks && (
                 <div className="w-full">
                     <h2 className="font-bold mb-1">Épinglés</h2>
                     <div className="flex flex-col gap-1">
-                        {isLoadingPinned && <Loader className="mx-auto text-center"/>}
-
+                        {isLoadingPinned && <Loader className="mx-auto text-center" />}
                         {!isLoadingPinned && pinnedTasks.length === 0 && (
                             <p className="text-gray-500">Aucune tâche épinglée.</p>
                         )}
-
                         {!isLoadingPinned && pinnedTasks.map((pinnedTask) => (
                             <TaskItem
                                 key={pinnedTask.ref}
@@ -166,12 +171,10 @@ const Home = ({
             <div className="flex flex-col flex-grow w-full overflow-y-auto">
                 <h2 className="font-bold mb-1">Toutes les tâches</h2>
                 <div className="flex flex-col gap-1 w-full">
-                    {isLoading && <Loader className="mx-auto text-center"/>}
-
+                    {isLoading && <Loader className="mx-auto text-center" />}
                     {!isLoading && tasks.length === 0 && (
                         <p className="text-gray-500">Aucun résultat :(</p>
                     )}
-
                     {!isLoading && tasks.map((task) => (
                         <TaskItem
                             key={task.ref}
