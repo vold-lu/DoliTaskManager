@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Settings = ({apiKey, setApiKey, apiUrl, setApiUrl, showOnlyMyTasks, setShowOnlyMyTasks, defaultDuration, setDefaultDuration, showClosedTasks, setShowClosedTasks}) => {
+const Settings = ({apiKey, setApiKey, apiUrl, setApiUrl, showOnlyMyTasks, setShowOnlyMyTasks, defaultDuration, setDefaultDuration, showClosedTasks, setShowClosedTasks, useEmojiIcons, setUseEmojiIcons}) => {
     return (
         <div className="flex flex-col gap-2 items-center p-2 bg-blue-50 h-full">
             <label className={'w-full'}>
@@ -54,6 +54,16 @@ const Settings = ({apiKey, setApiKey, apiUrl, setApiUrl, showOnlyMyTasks, setSho
                     className="border rounded"
                     checked={showClosedTasks}
                     onChange={(e) => setShowClosedTasks(e.target.checked)}
+                />
+            </label>
+
+            <label className="w-full flex gap-2">
+                Afficher des emojis pour les icônes
+                <input
+                    type="checkbox"
+                    className="border rounded"
+                    checked={useEmojiIcons}
+                    onChange={(e) => setUseEmojiIcons(e.target.checked)}
                 />
             </label>
         </div>

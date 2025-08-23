@@ -13,7 +13,8 @@ const Home = ({
                   setView,
                   setSelectedTask,
                   pinnedTaskRefs,
-                  savePinnedTaskRef
+                  savePinnedTaskRef,
+                  useEmojiIcons
               }) => {
     const {searchTasks, getTask} = useAPIData(apiUrl, apiKey);
 
@@ -155,7 +156,7 @@ const Home = ({
     }
 
     return (
-        <div className="h-[540px] overflow-hidden bg-blue-50 flex flex-col w-full">
+        <div className="h-[560px] overflow-hidden bg-blue-50 flex flex-col w-full">
             {/* Scrollable content */}
             <div className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-1">
                 {/* Search bar sticky with gradient and glass effect */}
@@ -194,7 +195,7 @@ const Home = ({
 
                 {/* Liste des pinned tasks */}
                 <div className="flex flex-col gap-2 px-2 pb-2">
-                    {isLoadingPinned && <Loader className="mx-auto text-center"/>}
+                    {isLoadingPinned && <Loader className="mx-auto text-center" />}
                     {!isLoadingPinned && pinnedTasks.length === 0 &&
                         <p className="text-gray-400 text-sm">Aucune tâche épinglée.</p>
                     }
@@ -202,19 +203,20 @@ const Home = ({
                         pinnedTasks.map((pinnedTask) => (
                             <TaskItem
                                 key={pinnedTask.ref}
-                                className="bg-yellow-50 border border-yellow-200 rounded-lg shadow px-3 py-2"
+                                className="bg-yellow-50 border rounded-lg shadow px-3 py-2"
                                 task={pinnedTask}
                                 setTaskPinned={setTaskPinned}
                                 selectTask={selectTask}
                                 showOnlyMyTasks={showOnlyMyTasks}
+                                useEmojiIcons={useEmojiIcons}
                             />
                         ))}
                 </div>
 
                 {/* Toutes les tâches sticky header */}
                 <div ref={tasksHeaderRef}
-                    className="sticky z-10 bg-blue-50 py-1 px-2"
-                    style={{top: searchBarHeight + pinnedHeaderHeight}}>
+                     className="sticky z-10 bg-blue-50 py-1 px-2"
+                     style={{top: searchBarHeight + pinnedHeaderHeight}}>
                     <div className="flex items-center gap-1 text-blue-700 font-semibold text-sm">
                         <span>Toutes les tâches</span>
                         <span className="text-xs font-normal text-gray-400">({tasks.length})</span>
@@ -223,19 +225,20 @@ const Home = ({
 
                 {/* Liste des tasks */}
                 <div className="flex flex-col gap-2 w-full pb-2 px-2">
-                    {isLoading && <Loader className="mx-auto text-center"/>}
+                    {isLoading && <Loader className="mx-auto text-center" />}
                     {!isLoading && tasks.length === 0 &&
                         <p className="text-gray-400 text-sm">Aucun résultat :(</p>
                     }
                     {!isLoading && tasks.map((task) => (
-                            <TaskItem key={task.ref}
-                                className="bg-white border border-gray-200 rounded-lg shadow px-3 py-2"
-                                task={task}
-                                setTaskPinned={setTaskPinned}
-                                selectTask={selectTask}
-                                showOnlyMyTasks={showOnlyMyTasks}
-                            />
-                        ))}
+                        <TaskItem key={task.ref}
+                                  className="bg-white border border-gray-200 rounded-lg shadow px-3 py-2"
+                                  task={task}
+                                  setTaskPinned={setTaskPinned}
+                                  selectTask={selectTask}
+                                  showOnlyMyTasks={showOnlyMyTasks}
+                                  useEmojiIcons={useEmojiIcons}
+                        />
+                    ))}
                 </div>
             </div>
 

@@ -17,6 +17,7 @@ const App = () => {
     const [showOnlyMyTasks, setShowOnlyMyTasks] = useState(true);
     const [showClosedTasks, setShowClosedTasks] = useState(false);
     const [pinnedTaskRefs, setPinnedTaskRefs] = useState([]);
+    const [useEmojiIcons, setUseEmojiIcons] = useState(false);
 
     const [selectedTask, setSelectedTask] = useState(null);
 
@@ -56,6 +57,12 @@ const App = () => {
                 setPinnedTaskRefs(result.pinnedTaskRefs)
             }
         })
+
+        chrome.storage.sync.get(['useEmojiIcons'], (result) => {
+            if (result.useEmojiIcons !== undefined) {
+                setUseEmojiIcons(result.useEmojiIcons);
+            }
+        });
     }, [])
 
     const saveApiKey = (currentApiKey) => {
@@ -106,10 +113,15 @@ const App = () => {
         });
     };
 
+    const saveUseEmojiIcons = (value) => {
+        chrome.storage.sync.set({useEmojiIcons: value}, () => {
+            setUseEmojiIcons(value);
+        });
+    };
 
     return (
         <>
-            <Header view={view} setView={setView} setSelectedTask={setSelectedTask}/>
+            <Header view={view} setView={setView} setSelectedTask={setSelectedTask} />
             <div className={'w-full h-full'}>
 
                 {view === 'home' ?
@@ -117,7 +129,7 @@ const App = () => {
                           showClosedTasks={showClosedTasks}
                           setView={setView} selectedTask={selectedTask}
                           setSelectedTask={setSelectedTask} pinnedTaskRefs={pinnedTaskRefs}
-                          savePinnedTaskRef={savePinnedTaskRef}/>
+                          savePinnedTaskRef={savePinnedTaskRef} useEmojiIcons={useEmojiIcons} />
                     :
                     null
                 }
@@ -129,6 +141,7 @@ const App = () => {
                               setDefaultDuration={saveDefaultDuration} defaultDuration={defaultDuration}
                               setShowClosedTasks={saveShowClosedTasks}
                               showClosedTasks={showClosedTasks}
+                              useEmojiIcons={useEmojiIcons} setUseEmojiIcons={saveUseEmojiIcons}
                     />
                     :
                     null
@@ -136,7 +149,8 @@ const App = () => {
 
                 {view === 'task' ?
                     <Task apiKey={apiKey} apiUrl={apiUrl} setView={setView} selectedTask={selectedTask}
-                          setSelectedTask={setSelectedTask} defaultDuration={defaultDuration}/>
+                          setSelectedTask={setSelectedTask} defaultDuration={defaultDuration}
+                          useEmojiIcons={useEmojiIcons} />
                     :
                     null
                 }
@@ -145,4 +159,4 @@ const App = () => {
     )
 }
 
-ReactDOM.createRoot(document.getElementById('root')).render(<App/>)
+ReactDOM.createRoot(document.getElementById('root')).render(<App />)
