@@ -85,9 +85,7 @@ const Home = ({
             }
         };
 
-        fetchTasks().catch(error => {
-            console.error("Erreur lors de la récupération des tâches:", error);
-        });
+        fetchTasks().catch(error => console.error("Erreur lors de la récupération des tâches:", error));
     }, [searchTerm, apiUrl, apiKey, showOnlyMyTasks, pinnedTaskRefs]);
 
     useEffect(() => {
@@ -112,9 +110,7 @@ const Home = ({
                 setIsLoadingPinned(false);
             }
         };
-        fetchPinnedTasks().catch(error => {
-            console.error("Erreur lors de la récupération des tâches épinglées:", error);
-        });
+        fetchPinnedTasks().catch(error => console.error("Erreur lors de la récupération des tâches épinglées:", error));
     }, [pinnedTaskRefs, apiUrl, apiKey]);
 
     const findTaskRef = async () => {

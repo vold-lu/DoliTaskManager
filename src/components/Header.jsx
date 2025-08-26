@@ -32,18 +32,17 @@ const Header = ({view, setView}) => {
                 <div className={'flex flex-row gap-2 items-center'}>
                     {getBackView()
                         ? <div onClick={() => setView(getBackView())} className={'cursor-pointer'}>
-                            <ArrowLeft/>
+                            <ArrowLeft />
                         </div>
                         : null
                     }
-                    <p className={'text-lg font-bold'}><Title/></p>
+                    <p className={'text-lg font-bold'}><Title /></p>
                 </div>
-                {
-                    view !== 'settings'
-                        ? <div onClick={() => setView('settings')} className={'cursor-pointer'}>
-                            <Setting/>
-                        </div>
-                        : <div></div>
+                {view !== 'settings'
+                    ? <div onClick={() => setView('settings')} className={'cursor-pointer'}>
+                        <Setting />
+                    </div>
+                    : <div></div>
                 }
             </div>
         </div>
