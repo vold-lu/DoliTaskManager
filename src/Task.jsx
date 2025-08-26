@@ -2,6 +2,8 @@ import React, {useEffect, useState} from 'react';
 import {useAPIData} from "./hooks/api.js";
 import Loader from "./components/Loader.jsx";
 import TaskIcon from "./components/TaskIcon.jsx";
+import sha256 from 'crypto-js/sha256';
+import TaskTimeHistory from "./components/TaskTimeHistory.jsx";
 
 const Task = ({apiUrl, apiKey, selectedTask, defaultDuration, useEmojiIcons}) => {
 
@@ -30,18 +32,14 @@ const Task = ({apiUrl, apiKey, selectedTask, defaultDuration, useEmojiIcons}) =>
 
     }, [selectedTask])
 
-    function DurationButton({duration, className}) {
+    function DurationButton({duration}) {
         return (
-            <div
-                className={
-                    'px-3 py-2 rounded-md text-xs font-medium text-center cursor-pointer transition-transform duration-150 ' +
-                    (selectedDuration == duration
-                            ? getBorderColor(task?.type_code) + getBgColor(task?.type_code) + getTextColor(task?.type_code) + getFocusRingColor(task?.type_code) + getBgSelectedColor(task?.type_code)
-                            : getBgColor(task?.type_code) + getTextColor(task?.type_code) + getHoverBgColor(task?.type_code)
-                    )
-                }
-                onClick={() => setSelectedDuration(duration)}
-            >
+            <div className={
+                'px-3 py-2 rounded-md text-xs font-medium text-center cursor-pointer transition-transform duration-150 ' +
+                (selectedDuration == duration
+                    ? getBorderColor(task?.type_code) + getBgColor(task?.type_code) + getTextColor(task?.type_code) + getFocusRingColor(task?.type_code) + getBgSelectedColor(task?.type_code)
+                    : getBgColor(task?.type_code) + getTextColor(task?.type_code) + getHoverBgColor(task?.type_code))}
+                 onClick={() => setSelectedDuration(duration)}>
                 {duration} min
             </div>
         )
@@ -98,7 +96,6 @@ const Task = ({apiUrl, apiKey, selectedTask, defaultDuration, useEmojiIcons}) =>
     function setCustomerDuration(value) {
         setSelectedDuration(parseInt(value))
     }
-
 
     if (isLoading) {
         return <Loader />
@@ -202,57 +199,93 @@ const Task = ({apiUrl, apiKey, selectedTask, defaultDuration, useEmojiIcons}) =>
         return getBgColor(type_code) + getTextColor(type_code) + getHoverBgColor(type_code) + getBorderColor(type_code) + getFocusRingColor(type_code);
     }
 
+    // Format seconds to a human-friendly business duration using the existing formatter
+    function formatSecondsHuman(seconds) {
+        const mins = Math.round(parseInt(seconds || 0, 10) / 60);
+        return formatBusinessDuration(mins);
+    }
+
+    // Format a timestamp (YYYY-MM-DD HH:mm:ss) into a local readable string
+    function formatDateTime(ts) {
+        if (!ts) return '';
+        try {
+            const d = new Date(ts.replace(' ', 'T'));
+            return d.toLocaleString();
+        } catch {
+            return ts;
+        }
+    }
+
+    function getGravatarUrl(email, size = 32) {
+        const clean = (email || '').trim().toLowerCase();
+        const hash = sha256(clean).toString();
+        return `https://www.gravatar.com/avatar/${hash}?s=${size}&d=identicon`;
+    }
 
     return (
-        <div className={'p-3 bg-gray-50 h-full'}>
-            <h1 className={'text-2xl font-bold mb-2 flex flex-row gap-2 text-center items-center w-full justify-center'}>
-                <TaskIcon type={task?.type_code} useEmojiIcons={useEmojiIcons} />
-                <span>{task?.ref}</span>
-            </h1>
-            <div className={'text-center mb-4 px-4 py-2 rounded-lg'}>
-                {task?.subject}
+        <div className="h-[560px] overflow-hidden bg-blue-50 flex flex-col w-full">
+            <div className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-2 px-2 py-4">
+                <div className="mx-auto w-80">
+                    <h1 className={'text-2xl font-bold mb-2 flex flex-row gap-2 text-center items-center w-full justify-center'}>
+                        <TaskIcon type={task?.type_code} useEmojiIcons={useEmojiIcons} />
+                        <span>{task?.ref}</span>
+                    </h1>
+                    <div className={'text-center py-2 rounded-lg'}>
+                        {task?.subject}
+                    </div>
+                    <div className={'grid grid-cols-4 gap-1 items-center py-2'}>
+                        <DurationButton duration={5} className={getColor(task?.type_code)} />
+                        <DurationButton duration={10} className={getColor(task?.type_code)} />
+                        <DurationButton duration={15} className={getColor(task?.type_code)} />
+                        <DurationButton duration={20} className={getColor(task?.type_code)} />
+                        <DurationButton duration={30} className={getColor(task?.type_code)} />
+                        <DurationButton duration={60} className={getColor(task?.type_code)} />
+                        <DurationButton duration={120} className={getColor(task?.type_code)} />
+                        <input type={'number'} value={selectedDuration}
+                               className={'px-3 py-2 rounded-md text-md text-center bg-white ' + getBorderColor(task?.type_code) + getFocusRingColor(task?.type_code)}
+                               onChange={(e) => setCustomerDuration(e.target.value)} />
+                    </div>
+
+                    <div className={'grid grid-cols-6 gap-2 items-center pb-2'}>
+                        <div className={'col-span-1 h-full content-center p-2 text-center cursor-pointer rounded-md bg-white ' + getBorderColor(task?.type_code) + getHoverBgColor(task?.type_code)}
+                             onClick={() => updateTime('minus')}>
+                            -
+                        </div>
+                        <div className={'col-span-4 p-2 content-center bg-white text-center rounded-md h-full'}>
+                            {isUpdateTaskTimeLoading
+                                ? <Loader />
+                                : formatBusinessDuration(task?.time)
+                            }
+                        </div>
+                        <div className={'col-span-1 h-full p-2 content-center text-center cursor-pointer rounded-md bg-white ' + getBorderColor(task?.type_code) + getHoverBgColor(task?.type_code)}
+                             onClick={() => updateTime('plus')}>
+                            +
+                        </div>
+                    </div>
+
+                    <div className={'grid gap-1 items-center py-2'}>
+                        <input type={'text'} className={'p-2 rounded-md bg-white'} placeholder={'Note'} value={note}
+                               onChange={(e) => setNote(e.target.value)} />
+                    </div>
+
+                    <TaskTimeHistory
+                        times={task?.times}
+                        task={task}
+                        getGravatarUrl={getGravatarUrl}
+                        formatDateTime={formatDateTime}
+                        formatSecondsHuman={formatSecondsHuman}
+                        getBgColor={getBgColor}
+                        getTextColor={getTextColor}
+                        getBorderColor={getBorderColor} />
+
+                    <div className={'mx-auto text-center'}>
+                        <a target={'_blank'} className={'text-center text-red-500 hover:underline font-bold'}
+                           href={task?.link}>
+                            Voir sur Dolibarr
+                        </a>
+                    </div>
+                </div>
             </div>
-            <div className={'mx-auto w-80'}>
-                <div className={'grid grid-cols-4 gap-1 items-center mb-2'}>
-                    <DurationButton duration={5} className={getColor(task?.type_code)} />
-                    <DurationButton duration={10} className={getColor(task?.type_code)} />
-                    <DurationButton duration={15} className={getColor(task?.type_code)} />
-                    <DurationButton duration={20} className={getColor(task?.type_code)} />
-                    <DurationButton duration={30} className={getColor(task?.type_code)} />
-                    <DurationButton duration={60} className={getColor(task?.type_code)} />
-                    <DurationButton duration={120} className={getColor(task?.type_code)} />
-                    <input type={'number'} value={selectedDuration}
-                           className={'px-3 py-2 rounded-md text-md text-center bg-white ' + getBorderColor(task?.type_code) + getFocusRingColor(task?.type_code)}
-                           onChange={(e) => setCustomerDuration(e.target.value)} />
-                </div>
-
-                <div className={'grid grid-cols-6 gap-2 items-center h-12 mb-4'}>
-                    <div className={'col-span-1 h-full content-center p-2 text-center cursor-pointer rounded bg-white ' + getBorderColor(task?.type_code) + getHoverBgColor(task?.type_code)}
-                         onClick={() => updateTime('minus')}>
-                        -
-                    </div>
-                    <div className={'col-span-4 p-2 content-center bg-white text-center rounded h-full'}>
-                        {isUpdateTaskTimeLoading
-                            ? <Loader />
-                            : formatBusinessDuration(task?.time)
-                        }
-                    </div>
-                    <div className={'col-span-1 h-full p-2 content-center text-center cursor-pointer rounded bg-white ' + getBorderColor(task?.type_code) + getHoverBgColor(task?.type_code)}
-                         onClick={() => updateTime('plus')}>
-                        +
-                    </div>
-                </div>
-
-                <div className={'grid gap-1 items-center mb-8'}>
-                    <input type={'text'} className={'p-2 rounded bg-white'} placeholder={'Note'} value={note}
-                           onChange={(e) => setNote(e.target.value)} />
-                </div>
-                <div className={'mx-auto text-center'}>
-                    <a target={'_blank'} className={'text-center text-red-500 hover:underline font-bold'}
-                       href={task?.link}>Voir sur Dolibarr</a>
-                </div>
-            </div>
-
         </div>
     );
 };

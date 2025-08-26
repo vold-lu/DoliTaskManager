@@ -16,7 +16,7 @@ const Home = ({
                   savePinnedTaskRef,
                   useEmojiIcons
               }) => {
-    const {searchTasks, getTask} = useAPIData(apiUrl, apiKey);
+    const {getTasks, getTask} = useAPIData(apiUrl, apiKey);
 
     const [searchTerm, setSearchTerm] = useState('');
     const [tasks, setTasks] = useState([]);
@@ -63,7 +63,7 @@ const Home = ({
                 }
             }
 
-            const params = {search_term: currentSearchTerm};
+            const params = {keyword: currentSearchTerm};
             if (showOnlyMyTasks === false) {
                 params.view_all_tasks = true;
             }
@@ -72,7 +72,7 @@ const Home = ({
             }
 
             try {
-                const items = await searchTasks(params) || [];
+                const items = await getTasks(params) || [];
                 const itemsWithPinned = items.map(item => ({
                     ...item,
                     is_pinned: pinnedTaskRefs?.includes(item.ref) || false

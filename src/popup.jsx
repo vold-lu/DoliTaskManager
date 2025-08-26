@@ -108,7 +108,6 @@ const App = () => {
         }
 
         chrome.storage.sync.set({pinnedTaskRefs: updatedPinnedTaskRefs}, () => {
-            console.log(updatedPinnedTaskRefs)
             setPinnedTaskRefs(updatedPinnedTaskRefs);
         });
     };

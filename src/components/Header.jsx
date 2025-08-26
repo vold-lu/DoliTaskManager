@@ -27,7 +27,7 @@ const Header = ({view, setView}) => {
     }
 
     return (
-        <div className={'bg-gradient-to-r from-blue-500 to-purple-700 p-2 text-white'}>
+        <div className={'bg-gradient-to-r from-blue-500 to-purple-700 p-2 text-white flex-none shrink-0'}>
             <div className={'flex flex-row justify-between items-center'}>
                 <div className={'flex flex-row gap-2 items-center'}>
                     {getBackView()
