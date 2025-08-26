@@ -18,6 +18,7 @@ const Home = ({
               }) => {
     const {getTasks, getTask} = useAPIData(apiUrl, apiKey);
 
+    const [inputValue, setInputValue] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
     const [tasks, setTasks] = useState([]);
     const [pinnedTasks, setPinnedTasks] = useState([]);
@@ -45,6 +46,15 @@ const Home = ({
         return () => window.removeEventListener('resize', updateHeights);
     }, []);
 
+    // DEBOUNCE
+    useEffect(() => {
+        const delay = setTimeout(() => {
+            setSearchTerm(inputValue);
+        }, 400);
+
+        return () => clearTimeout(delay); // réinitialisation si frappe avant la fin du délai
+    }, [inputValue]);
+
     useEffect(() => {
         if (!apiKey || !apiUrl) return;
 
@@ -56,7 +66,7 @@ const Home = ({
             if (searchTerm === '') {
                 currentSearchTerm = await findTaskRef();
                 if (currentSearchTerm && lastRefFounded !== currentSearchTerm) {
-                    setSearchTerm(currentSearchTerm);
+                    setInputValue(currentSearchTerm); // ← met aussi à jour le champ input
                     setLastRefFounded(currentSearchTerm);
                 } else {
                     currentSearchTerm = '';
@@ -86,7 +96,7 @@ const Home = ({
         };
 
         fetchTasks().catch(error => console.error("Erreur lors de la récupération des tâches:", error));
-    }, [searchTerm, apiUrl, apiKey, showOnlyMyTasks, pinnedTaskRefs]);
+    }, [searchTerm, apiUrl, apiKey, showOnlyMyTasks, showClosedTasks, pinnedTaskRefs]);
 
     useEffect(() => {
         if (!apiKey || !apiUrl) return;
@@ -110,6 +120,7 @@ const Home = ({
                 setIsLoadingPinned(false);
             }
         };
+
         fetchPinnedTasks().catch(error => console.error("Erreur lors de la récupération des tâches épinglées:", error));
     }, [pinnedTaskRefs, apiUrl, apiKey]);
 
@@ -172,8 +183,8 @@ const Home = ({
                                 type="search"
                                 className="w-full pl-10 pr-4 py-2 bg-white/20 border border-white/30 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/50 focus:bg-white/30 transition-all duration-300 shadow-sm"
                                 placeholder="Rechercher une tâche…"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
+                                value={inputValue}
+                                onChange={(e) => setInputValue(e.target.value)}
                             />
                         </div>
                     </div>
@@ -195,18 +206,17 @@ const Home = ({
                     {!isLoadingPinned && pinnedTasks.length === 0 &&
                         <p className="text-gray-400 text-sm">Aucune tâche épinglée.</p>
                     }
-                    {!isLoadingPinned &&
-                        pinnedTasks.map((pinnedTask) => (
-                            <TaskItem
-                                key={pinnedTask.ref}
-                                className="bg-yellow-50 border rounded-lg shadow px-3 py-2"
-                                task={pinnedTask}
-                                setTaskPinned={setTaskPinned}
-                                selectTask={selectTask}
-                                showOnlyMyTasks={showOnlyMyTasks}
-                                useEmojiIcons={useEmojiIcons}
-                            />
-                        ))}
+                    {!isLoadingPinned && pinnedTasks.map((pinnedTask) => (
+                        <TaskItem
+                            key={pinnedTask.ref}
+                            className="bg-yellow-50 border rounded-lg shadow px-3 py-2"
+                            task={pinnedTask}
+                            setTaskPinned={setTaskPinned}
+                            selectTask={selectTask}
+                            showOnlyMyTasks={showOnlyMyTasks}
+                            useEmojiIcons={useEmojiIcons}
+                        />
+                    ))}
                 </div>
 
                 {/* Toutes les tâches sticky header */}
