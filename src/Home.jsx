@@ -16,7 +16,7 @@ const Home = ({
                   savePinnedTaskRef,
                   useEmojiIcons
               }) => {
-    const {getTasks, getTask} = useAPIData(apiUrl, apiKey);
+    const {searchTasks, getTask} = useAPIData(apiUrl, apiKey);
 
     const [inputValue, setInputValue] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
@@ -82,7 +82,7 @@ const Home = ({
             }
 
             try {
-                const items = await getTasks(params) || [];
+                const items = await searchTasks(params) || [];
                 const itemsWithPinned = items.map(item => ({
                     ...item,
                     is_pinned: pinnedTaskRefs?.includes(item.ref) || false
