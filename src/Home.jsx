@@ -73,7 +73,7 @@ const Home = ({
                 }
             }
 
-            const params = {keyword: currentSearchTerm};
+            const params = {search_term: currentSearchTerm};
             if (showOnlyMyTasks === false) {
                 params.view_all_tasks = true;
             }
