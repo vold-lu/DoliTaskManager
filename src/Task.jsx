@@ -4,8 +4,10 @@ import Loader from "./components/Loader.jsx";
 import TaskIcon from "./components/TaskIcon.jsx";
 import sha256 from 'crypto-js/sha256';
 import TaskTimeHistory from "./components/TaskTimeHistory.jsx";
+import Input from "./components/Input.jsx";
+import ExternalLink from "./components/ExternalLink.jsx";
 
-const Task = ({apiUrl, apiKey, selectedTask, defaultDuration, useEmojiIcons}) => {
+const Task = ({apiUrl, apiKey, selectedTask, defaultDuration, useEmojiIcons, limitTimes, showTimes}) => {
 
     const {getTask, updateTaskTime} = useAPIData(apiUrl, apiKey);
 
@@ -15,22 +17,24 @@ const Task = ({apiUrl, apiKey, selectedTask, defaultDuration, useEmojiIcons}) =>
     const [selectedDuration, setSelectedDuration] = useState(defaultDuration);
     const [note, setNote] = useState('');
 
+    useEffect(() => setSelectedDuration(defaultDuration), [defaultDuration]);
+
     useEffect(() => {
         setIsLoading(true)
         setTask(null);
 
         let params = {
             ref: selectedTask.ref,
+            limit_times: showTimes ? limitTimes : 0,
         }
 
-        getTask(params).then((item) => {
-            setTask(item)
-        }).finally(() => {
-            setIsLoading(false)
-            setNote('')
-        })
+        getTask(params).then(setTask)
+            .finally(() => {
+                setIsLoading(false)
+                setNote('')
+            })
 
-    }, [selectedTask])
+    }, [selectedTask, showTimes, limitTimes])
 
     function DurationButton({duration}) {
         return (
@@ -84,12 +88,21 @@ const Task = ({apiUrl, apiKey, selectedTask, defaultDuration, useEmojiIcons}) =>
             duration = -duration;
         }
 
-        updateTaskTime(task.ref, {duration: duration, note: note}).then(task => {
-            setTask(task)
-        }).finally(() => {
-            setIsUpdateTaskTimeLoading(false)
-            setNote('')
-        })
+        let params = {
+            ref: task.ref,
+            limit_times: showTimes ? limitTimes : 0
+        }
+
+        let data = {
+            duration: duration,
+            note: note,
+        }
+
+        updateTaskTime(params, data).then(setTask)
+            .finally(() => {
+                setIsUpdateTaskTimeLoading(false)
+                setNote('')
+            })
 
     }
 
@@ -226,6 +239,7 @@ const Task = ({apiUrl, apiKey, selectedTask, defaultDuration, useEmojiIcons}) =>
         <div className="h-[560px] overflow-hidden bg-blue-50 flex flex-col w-full">
             <div className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-2 px-2 py-4">
                 <div className="mx-auto w-80">
+
                     <h1 className={'text-2xl font-bold mb-2 flex flex-row gap-2 text-center items-center w-full justify-center'}>
                         <TaskIcon type={task?.type_code} useEmojiIcons={useEmojiIcons} />
                         <span>{task?.ref}</span>
@@ -233,6 +247,15 @@ const Task = ({apiUrl, apiKey, selectedTask, defaultDuration, useEmojiIcons}) =>
                     <div className={'text-center py-2 rounded-lg'}>
                         {task?.subject}
                     </div>
+                    {task?.user && typeof task.user === 'object' && (
+                        <div className="flex items-center justify-center gap-2 py-2">
+                            <img src={getGravatarUrl(task.user?.email, 32)}
+                                 alt={task.user?.name}
+                                 className="w-6 h-6 rounded-full" />
+                            <span className="text-xs font-semibold text-gray-700">{task.user?.name}</span>
+                        </div>
+                    )}
+
                     <div className={'grid grid-cols-4 gap-1 items-center py-2'}>
                         <DurationButton duration={5} className={getColor(task?.type_code)} />
                         <DurationButton duration={10} className={getColor(task?.type_code)} />
@@ -264,25 +287,26 @@ const Task = ({apiUrl, apiKey, selectedTask, defaultDuration, useEmojiIcons}) =>
                     </div>
 
                     <div className={'grid gap-1 items-center py-2'}>
-                        <input type={'text'} className={'p-2 rounded-md bg-white'} placeholder={'Note'} value={note}
+                        <Input type={'text'}
+                               placeholder={'Note'}
+                               value={note}
                                onChange={(e) => setNote(e.target.value)} />
                     </div>
 
-                    <TaskTimeHistory
-                        times={task?.times}
-                        task={task}
-                        getGravatarUrl={getGravatarUrl}
-                        formatDateTime={formatDateTime}
-                        formatSecondsHuman={formatSecondsHuman}
-                        getBgColor={getBgColor}
-                        getTextColor={getTextColor}
-                        getBorderColor={getBorderColor} />
+                    {showTimes && (
+                        <TaskTimeHistory
+                            times={task?.times}
+                            task={task}
+                            getGravatarUrl={getGravatarUrl}
+                            formatDateTime={formatDateTime}
+                            formatSecondsHuman={formatSecondsHuman}
+                            getBgColor={getBgColor}
+                            getTextColor={getTextColor}
+                            getBorderColor={getBorderColor} />
+                    )}
 
-                    <div className={'mx-auto text-center'}>
-                        <a target={'_blank'} className={'text-center text-red-500 hover:underline font-bold'}
-                           href={task?.link}>
-                            Voir sur Dolibarr
-                        </a>
+                    <div className={'mx-auto mt-4 w-1/2'}>
+                        <ExternalLink href={task?.link} label="Voir sur Dolibarr" />
                     </div>
                 </div>
             </div>

@@ -14,7 +14,8 @@ const Home = ({
                   setSelectedTask,
                   pinnedTaskRefs,
                   savePinnedTaskRef,
-                  useEmojiIcons
+                  useEmojiIcons,
+                  limitTasks,
               }) => {
     const {searchTasks, getTask} = useAPIData(apiUrl, apiKey);
 
@@ -73,7 +74,10 @@ const Home = ({
                 }
             }
 
-            const params = {search_term: currentSearchTerm};
+            const params = {
+                search_term: currentSearchTerm,
+                limit_tasks: limitTasks,
+            };
             if (showOnlyMyTasks === false) {
                 params.view_all_tasks = true;
             }
@@ -95,33 +99,30 @@ const Home = ({
             }
         };
 
-        fetchTasks().catch(error => console.error("Erreur lors de la récupération des tâches:", error));
-    }, [searchTerm, apiUrl, apiKey, showOnlyMyTasks, showClosedTasks, pinnedTaskRefs]);
+        fetchTasks()
+    }, [searchTerm, apiUrl, apiKey, showOnlyMyTasks, showClosedTasks, pinnedTaskRefs, limitTasks]);
 
     useEffect(() => {
         if (!apiKey || !apiUrl) return;
 
         const fetchPinnedTasks = async () => {
             setIsLoadingPinned(true);
-            try {
-                const tasks = await Promise.all(
-                    (pinnedTaskRefs ?? []).map(ref =>
-                        getTask({ref}).then(task => {
-                            if (task) task.is_pinned = true;
-                            return task;
-                        })
-                    )
-                );
-                const validTasks = tasks.filter(task => task !== null && task !== undefined);
-                setPinnedTasks(validTasks);
-            } catch (error) {
-                console.error("Erreur lors de la récupération des tâches épinglées:", error);
-            } finally {
-                setIsLoadingPinned(false);
-            }
+
+            let pinnedTasks = [];
+            pinnedTaskRefs.forEach(ref => {
+                getTask({ref}).then(task => {
+                    if (task) {
+                        task.is_pinned = true;
+                        pinnedTasks.push(task);
+                    }
+                }).catch(error => console.error("Erreur lors de la récupération de la tâche épinglée:", error));
+            });
+
+            setPinnedTasks(pinnedTasks);
+            setIsLoadingPinned(false);
         };
 
-        fetchPinnedTasks().catch(error => console.error("Erreur lors de la récupération des tâches épinglées:", error));
+        fetchPinnedTasks()
     }, [pinnedTaskRefs, apiUrl, apiKey]);
 
     const findTaskRef = async () => {

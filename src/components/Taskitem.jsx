@@ -13,8 +13,26 @@ const TaskItem = ({className, task, selectTask, showOnlyMyTasks, setTaskPinned, 
         }
     };
 
+    const getAssignee = (task) => {
+        if (showOnlyMyTasks) {
+            return '';
+        }
+
+        const user = task?.user;
+
+        if (typeof user === 'string') {
+            return `(${user})`;
+        }
+
+        if (user && typeof user === 'object') {
+            return user.name ? `(${user.name})` : null;
+        }
+
+        return null;
+    };
+
     return (
-        <div className={`bg-white rounded py-2 pr-2 pl-2 border-l-4 w-full cursor-pointer hover:shadow-lg flex flex-row items-center ${getBorderColor(task?.type_code)} ${className}`}
+        <div className={`bg-white rounded py-2 pr-2 pl-2 border-l-4 w-full cursor-pointer hover:shadow-md flex flex-row items-center ${getBorderColor(task?.type_code)} ${className}`}
              onClick={() => selectTask(task)}>
             <div className="flex flex-row gap-2 flex-nowrap items-center w-full">
                 <div className="grow">
@@ -23,7 +41,7 @@ const TaskItem = ({className, task, selectTask, showOnlyMyTasks, setTaskPinned, 
                                   className="inline-block w-4 h-4 align-middle"
                                   useEmojiIcons={useEmojiIcons} />
 
-                        {task.ref} {!showOnlyMyTasks && task?.user ? '(' + task?.user + ')' : ''}
+                        {task.ref} {getAssignee(task)}
                     </p>
                     <p className="text-gray-600">
                         {task?.subject}

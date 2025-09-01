@@ -14,7 +14,7 @@ const Header = ({view, setView}) => {
 
     function Title() {
         if (view === 'settings') {
-            return 'Settings';
+            return 'Configuration';
         }
 
         if (view === 'home') {
@@ -22,7 +22,7 @@ const Header = ({view, setView}) => {
         }
 
         if (view === 'task') {
-            return 'Task';
+            return 'Tâche';
         }
     }
 
