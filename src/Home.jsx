@@ -32,6 +32,8 @@ const Home = ({
     const pinnedHeaderRef = useRef(null);
     const tasksHeaderRef = useRef(null);
 
+    const skipDebounce = useRef(false);
+
     const [searchBarHeight, setSearchBarHeight] = useState(0);
     const [pinnedHeaderHeight, setPinnedHeaderHeight] = useState(0);
 
@@ -47,13 +49,14 @@ const Home = ({
         return () => window.removeEventListener('resize', updateHeights);
     }, []);
 
-    // DEBOUNCE
     useEffect(() => {
+        if (skipDebounce.current) return;
+
         const delay = setTimeout(() => {
             setSearchTerm(inputValue);
         }, 400);
 
-        return () => clearTimeout(delay); // réinitialisation si frappe avant la fin du délai
+        return () => clearTimeout(delay);
     }, [inputValue]);
 
     useEffect(() => {
@@ -67,7 +70,9 @@ const Home = ({
             if (searchTerm === '') {
                 currentSearchTerm = await findTaskRef();
                 if (currentSearchTerm && lastRefFounded !== currentSearchTerm) {
-                    setInputValue(currentSearchTerm); // ← met aussi à jour le champ input
+                    skipDebounce.current = true;
+                    setInputValue(currentSearchTerm);
+                    setSearchTerm(currentSearchTerm);
                     setLastRefFounded(currentSearchTerm);
                 } else {
                     currentSearchTerm = '';
@@ -185,7 +190,10 @@ const Home = ({
                                 className="w-full pl-10 pr-4 py-2 bg-white/20 border border-white/30 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/50 focus:bg-white/30 transition-all duration-300 shadow-sm"
                                 placeholder="Rechercher une tâche…"
                                 value={inputValue}
-                                onChange={(e) => setInputValue(e.target.value)}
+                                onChange={(e) => {
+                                    skipDebounce.current = false;
+                                    setInputValue(e.target.value);
+                                }}
                             />
                         </div>
                     </div>
