@@ -22,6 +22,14 @@ const Settings = ({
                       setLimitTimes,
                       showTimes,
                       setShowTimes,
+                      jiraPanel,
+                      setJiraPanel,
+                      jiraDates,
+                      setJiraDates,
+                      wideIssueModalWidth,
+                      setWideIssueModalWidth,
+                      gitlabPanel,
+                      setGitlabPanel,
                   }) => {
     return (
         <div className="h-[560px] overflow-hidden bg-blue-50 flex flex-col w-full">
@@ -69,7 +77,7 @@ const Settings = ({
                     full={false}
                     value={limitTasks}
                     onChange={(e) => setLimitTasks(parseInt(e.target.value, 10))}
-                    options={[5, 10, 15, 20, 25]}
+                    options={[5, 10, 15, 20, 25, 50, 100, 200]}
                 />
 
                 <h2 className="text-lg font-semibold w-full mt-4">Tâche</h2>
@@ -88,13 +96,43 @@ const Settings = ({
                     label="Afficher l'historique des temps passés"
                 />
                 <Select
-                  label="Nombre maximum de time spend à afficher"
-                  name="limitTimes"
-                  full={false}
-                  value={limitTimes}
-                  onChange={(e) => setLimitTimes(parseInt(e.target.value, 10))}
-                  options={[1, 5, 10]}
-                  disabled={!showTimes}
+                    label="Nombre maximum d'historiques de temps à charger"
+                    name="limitTimes"
+                    full={false}
+                    value={limitTimes}
+                    onChange={(e) => setLimitTimes(parseInt(e.target.value, 10))}
+                    options={[1, 5, 10]}
+                    disabled={!showTimes}
+                />
+
+                <h2 className="text-lg font-semibold w-full mt-4">Jira</h2>
+                <Switch
+                    id="jiraPanel"
+                    checked={jiraPanel}
+                    onChange={(val) => setJiraPanel(val)}
+                    label="Afficher la tâche dans le panneau de droite des tickets"
+                />
+                <Switch
+                    id="jiraDates"
+                    checked={jiraDates}
+                    onChange={(val) => setJiraDates(val)}
+                    label="Afficher les dates de création / mise à jour à côté du statut"
+                />
+                <Select
+                    label="Largeur de la popup des tickets (%)"
+                    name="wideIssueModalWidth"
+                    full={false}
+                    value={wideIssueModalWidth || 'Défaut'}
+                    onChange={(e) => setWideIssueModalWidth(parseInt(e.target.value, 10) || 0)}
+                    options={['Défaut', 60, 70, 80, 90, 95]}
+                />
+
+                <h2 className="text-lg font-semibold w-full mt-4">GitLab</h2>
+                <Switch
+                    id="gitlabPanel"
+                    checked={gitlabPanel}
+                    onChange={(val) => setGitlabPanel(val)}
+                    label="Afficher la tâche dans le panneau de droite des merge requests"
                 />
 
             </div>
